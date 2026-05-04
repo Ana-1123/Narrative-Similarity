@@ -1,3 +1,4 @@
+
 """
 Run:
     pip install streamlit plotly pandas
@@ -5,11 +6,11 @@ Run:
 """
 
 import json
-import random
 import re
 from pathlib import Path
 from collections import Counter
 
+import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -178,23 +179,81 @@ st.markdown(STYLE, unsafe_allow_html=True)
 
 # DATA LOADING
 
-from pathlib import Path
+SCRIPT_DIR = Path(__file__).resolve().parent.parent.parent
 
-SCRIPT_DIR = Path(__file__).parent.parent.parent  # Goes from backend/ to root
+
+def resolve_data_path(relative_path: str, fallback_filename: str | None = None) -> Path:
+    """
+    Try repository-relative location first, then a local app-relative fallback, then /mnt/data.
+    This keeps the app portable both inside the thesis repo and in standalone demo setups.
+    """
+    candidates = [
+        SCRIPT_DIR / relative_path,
+        Path(__file__).resolve().parent / Path(relative_path).name,
+    ]
+    if fallback_filename:
+        candidates.append(Path("/mnt/data") / fallback_filename)
+
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return candidates[0]
+
+
 DATA_PATHS = {
-    "dev":      SCRIPT_DIR / "narrative_nlp/dataset/dev_track_a.jsonl",
-    "aspects":  SCRIPT_DIR / "narrative_nlp/dataset/clean_extracted_aspects.json",
-    "results":  None,
+    "dev":         resolve_data_path("narrative_nlp/dataset/dev_track_a.jsonl", "dev_track_a.jsonl"),
+    "aspects":     resolve_data_path("narrative_nlp/dataset/clean_extracted_aspects.json", "clean_extracted_aspects.json"),
+    "test_a":      resolve_data_path("narrative_nlp/dataset/test_track_a.jsonl", "test_track_a.jsonl"),
+    "test_b":      resolve_data_path("narrative_nlp/dataset/test_track_b.jsonl", "test_track_b.jsonl"),
+    "synth":       resolve_data_path("narrative_nlp/dataset/synthetic_data_for_classification.jsonl", "synthetic_data_for_classification.jsonl"),
+    "synth_new":   resolve_data_path("narrative_nlp/dataset/synthetic_data_new.jsonl", "synthetic_data_new.jsonl"),
+    "results":     None,
 }
+
+
+def norm_text(text: str) -> str:
+    return " ".join(str(text).split())
+
+
+def word_count(text: str) -> int:
+    return len(re.findall(r"\w+", str(text)))
+
+
+def char_count(text: str) -> int:
+    return len(str(text))
+
+
+@st.cache_data
+def load_jsonl_file(path: Path):
+    if not path or not Path(path).exists():
+        return []
+    with open(path, encoding="utf-8") as f:
+        return [json.loads(l) for l in f if l.strip()]
 
 
 @st.cache_data
 def load_dev_triples():
-    path = DATA_PATHS["dev"]
-    if not Path(path).exists():
-        return []
-    with open(path, encoding="utf-8") as f:
-        return [json.loads(l) for l in f if l.strip()]
+    return load_jsonl_file(DATA_PATHS["dev"])
+
+
+@st.cache_data
+def load_test_a_rows():
+    return load_jsonl_file(DATA_PATHS["test_a"])
+
+
+@st.cache_data
+def load_test_b_rows():
+    return load_jsonl_file(DATA_PATHS["test_b"])
+
+
+@st.cache_data
+def load_synth_rows():
+    return load_jsonl_file(DATA_PATHS["synth"])
+
+
+@st.cache_data
+def load_synth_new_rows():
+    return load_jsonl_file(DATA_PATHS["synth_new"])
 
 
 @st.cache_data
@@ -204,7 +263,146 @@ def load_aspects_cache():
         return {}
     with open(path, encoding="utf-8") as f:
         raw = json.load(f)
-    return {" ".join(k.split()): v for k, v in raw.items()}
+    return {norm_text(k): v for k, v in raw.items()}
+
+
+@st.cache_data
+def build_dataset_summary():
+    dev = load_dev_triples()
+    test_a = load_test_a_rows()
+    test_b = load_test_b_rows()
+    synth = load_synth_rows()
+    synth_new = load_synth_new_rows()
+
+    def split_summary(name, rows, kind="triples", labeled=False):
+        if kind == "triples":
+            texts = []
+            for r in rows:
+                for field in ["anchor_text", "text_a", "text_b"]:
+                    if field in r:
+                        texts.append(r[field])
+            unique_texts = len(set(texts))
+            avg_words = np.mean([word_count(t) for t in texts]) if texts else 0
+            out = {
+                "Split": name,
+                "Rows": len(rows),
+                "Unique texts": unique_texts,
+                "Avg words / text": round(float(avg_words), 1),
+                "Labeled": "Yes" if labeled else "No",
+            }
+            if labeled and rows:
+                pos = sum(bool(r.get("text_a_is_closer")) for r in rows)
+                neg = len(rows) - pos
+                out["Positive"] = pos
+                out["Negative"] = neg
+            return out
+
+        texts = [r["text"] for r in rows if "text" in r]
+        avg_words = np.mean([word_count(t) for t in texts]) if texts else 0
+        return {
+            "Split": name,
+            "Rows": len(rows),
+            "Unique texts": len(set(texts)),
+            "Avg words / text": round(float(avg_words), 1),
+            "Labeled": "No",
+        }
+
+    rows = [
+        split_summary("Dev Track A", dev, labeled=True),
+        split_summary("Test Track A", test_a, labeled=False),
+        split_summary("Test Track B", test_b, kind="single_text"),
+        split_summary("Synthetic v1", synth, labeled=True),
+        split_summary("Synthetic v2", synth_new, labeled=True),
+    ]
+    return pd.DataFrame(rows)
+
+
+@st.cache_data
+def build_dev_text_length_df():
+    dev = load_dev_triples()
+    records = []
+    for i, row in enumerate(dev):
+        for field, label in [("anchor_text", "Anchor"), ("text_a", "Text A"), ("text_b", "Text B")]:
+            text = row.get(field, "")
+            records.append({
+                "triple_id": i,
+                "field": label,
+                "words": word_count(text),
+                "chars": char_count(text),
+            })
+    return pd.DataFrame(records)
+
+
+@st.cache_data
+def build_unique_story_df():
+    dev = load_dev_triples()
+    aspects = load_aspects_cache()
+    unique_texts = []
+    seen = set()
+
+    for row in dev:
+        for field in ["anchor_text", "text_a", "text_b"]:
+            txt = row.get(field, "")
+            if txt and txt not in seen:
+                seen.add(txt)
+                entry = aspects.get(norm_text(txt), {})
+                unique_texts.append({
+                    "text": txt,
+                    "words": word_count(txt),
+                    "chars": char_count(txt),
+                    "coa_words": word_count(entry.get("coa", "")),
+                    "outcomes_words": word_count(entry.get("outcomes", "")),
+                    "theme_words": word_count(entry.get("theme", "")),
+                    "resolution_status": entry.get("resolution_status", "unknown") or "unknown",
+                    "theme": entry.get("theme", ""),
+                })
+    return pd.DataFrame(unique_texts)
+
+
+@st.cache_data
+def build_theme_frequency_df(top_n: int = 15):
+    df = build_unique_story_df()
+    counter = Counter()
+    for theme in df["theme"].fillna(""):
+        parts = [p.strip().lower() for p in re.split(r"[;,]", theme) if p.strip()]
+        for part in parts:
+            counter[part] += 1
+    top = counter.most_common(top_n)
+    return pd.DataFrame(top, columns=["theme_phrase", "count"])
+
+
+@st.cache_data
+def build_resolution_df():
+    df = build_unique_story_df()
+    counts = df["resolution_status"].value_counts().reset_index()
+    counts.columns = ["resolution_status", "count"]
+    return counts
+
+
+@st.cache_data
+def build_aspect_length_df():
+    aspects = load_aspects_cache()
+    records = []
+    for value in aspects.values():
+        records.extend([
+            {"aspect": "CoA", "words": word_count(value.get("coa", ""))},
+            {"aspect": "Outcomes", "words": word_count(value.get("outcomes", ""))},
+            {"aspect": "Theme", "words": word_count(value.get("theme", ""))},
+        ])
+    return pd.DataFrame(records)
+
+
+@st.cache_data
+def build_synth_new_metadata():
+    rows = load_synth_new_rows()
+    if not rows:
+        return pd.DataFrame(), pd.DataFrame()
+
+    gen_df = pd.DataFrame(Counter(r.get("generation_type", "unknown") for r in rows).most_common(),
+                          columns=["generation_type", "count"])
+    genre_df = pd.DataFrame(Counter(r.get("seed_genre", "unknown") for r in rows).most_common(12),
+                            columns=["seed_genre", "count"])
+    return gen_df, genre_df
 
 
 # Hardcoded experimental results — update as experiments complete
@@ -237,6 +435,21 @@ PLOT_BG = "#14171f"
 PLOT_GRID = "#1e2330"
 FONT_COLOR = "#e8e4dc"
 
+
+def style_plotly(fig, height=320, margin_t=40, margin_b=40):
+    fig.update_layout(
+        paper_bgcolor=PLOT_BG,
+        plot_bgcolor=PLOT_BG,
+        font=dict(family="JetBrains Mono", color=FONT_COLOR),
+        margin=dict(l=10, r=10, t=margin_t, b=margin_b),
+        height=height,
+        showlegend=False,
+    )
+    fig.update_xaxes(gridcolor=PLOT_GRID)
+    fig.update_yaxes(gridcolor=PLOT_GRID)
+    return fig
+
+
 # SIDEBAR NAVIGATION
 
 with st.sidebar:
@@ -260,6 +473,7 @@ with st.sidebar:
     page = st.radio(
         "Navigate",
         ["📖  Live Demo",
+         "🗂  Dataset",
          "📊  Ablation Results",
          "🔍  Aspect Explorer",
          "❌  Error Analysis"],
@@ -271,10 +485,9 @@ with st.sidebar:
     st.markdown("""
 <div style='font-family: JetBrains Mono, monospace; font-size: 0.68rem; color: #6b7280; line-height: 1.8;'>
   <b style='color:#c8a96e;'>Model:</b> RoBERTa-large<br>
-  <!-- <b style='color:#c8a96e;'>Baseline:</b> A=70.75% · B=65.75%<br> -->
-  <!-- <b style='color:#c8a96e;'>Narrative Team:</b> A=64.25% · B=69.25% -->
 </div>
 """, unsafe_allow_html=True)
+
 
 # PAGE 1 — LIVE DEMO
 
@@ -323,12 +536,12 @@ if page == "Live Demo":
                 unsafe_allow_html=True)
 
     # ── Aspect lookup ──────────────────────────────────────────────────────
-    norm_key = " ".join(anchor_text.split())
+    norm_key = norm_text(anchor_text)
     entry = aspects.get(norm_key, {})
 
-    coa     = entry.get("coa",      "")
-    outcomes= entry.get("outcomes", "")
-    theme   = entry.get("theme",    "")
+    coa      = entry.get("coa",      "")
+    outcomes = entry.get("outcomes", "")
+    theme    = entry.get("theme",    "")
     has_asp = bool(coa or outcomes or theme)
 
     st.markdown("---")
@@ -395,7 +608,7 @@ if page == "Live Demo":
                 f"<div class='section-title'>{label} &nbsp;{gold_str}</div>",
                 unsafe_allow_html=True)
 
-            norm_s = " ".join(story.split())
+            norm_s = norm_text(story)
             s_entry = aspects.get(norm_s, {})
 
             col_txt, col_asp = st.columns([3, 2])
@@ -447,7 +660,289 @@ if page == "Live Demo":
                     unsafe_allow_html=True)
 
 
-# PAGE 2 — ABLATION RESULTS
+# PAGE 2 — DATASET
+
+elif page == "Dataset":
+    st.markdown("## 🗂 Dataset")
+    st.markdown(
+        "<div class='section-title'>Split overview · text lengths · aspect coverage · synthetic metadata</div>",
+        unsafe_allow_html=True)
+
+    dev = load_dev_triples()
+    aspects = load_aspects_cache()
+    test_a = load_test_a_rows()
+    test_b = load_test_b_rows()
+    synth = load_synth_rows()
+    synth_new = load_synth_new_rows()
+
+    if not dev:
+        st.warning("`dev_track_a.jsonl` was not found.")
+        st.stop()
+
+    summary_df = build_dataset_summary()
+    unique_story_df = build_unique_story_df()
+    length_df = build_dev_text_length_df()
+    aspect_len_df = build_aspect_length_df()
+    resolution_df = build_resolution_df()
+    theme_df = build_theme_frequency_df()
+    gen_df, genre_df = build_synth_new_metadata()
+
+    dev_labels = Counter(bool(r["text_a_is_closer"]) for r in dev)
+    repeated_slots = len(dev) * 3 - unique_story_df.shape[0]
+
+    m1, m2, m3, m4, m5 = st.columns(5)
+    for col, val, label in [
+        (m1, f"{len(dev)}", "Dev triples"),
+        (m2, f"{unique_story_df.shape[0]}", "Unique dev stories"),
+        (m3, f"{len(aspects)}", "Aspect cache entries"),
+        (m4, f"{dev_labels[True]}/{dev_labels[False]}", "Dev label balance"),
+        (m5, f"{repeated_slots}", "Reused story slots"),
+    ]:
+        col.markdown(
+            f"<div class='metric-box'>"
+            f"<div class='metric-val'>{val}</div>"
+            f"<div class='metric-label'>{label}</div>"
+            f"</div>",
+            unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    tab1, tab2, tab3, tab4 = st.tabs(
+        ["Overview", "Text lengths", "Aspects", "Synthetic data"]
+    )
+
+    with tab1:
+        st.markdown("#### Split Overview")
+        st.dataframe(
+            summary_df,
+            width="stretch",
+            hide_index=True,
+            column_config={
+                "Split": st.column_config.TextColumn("Split", width=160),
+                "Rows": st.column_config.NumberColumn("Rows", width=80),
+                "Unique texts": st.column_config.NumberColumn("Unique texts", width=110),
+                "Avg words / text": st.column_config.NumberColumn("Avg words / text", width=110),
+                "Labeled": st.column_config.TextColumn("Labeled", width=70),
+            },
+        )
+
+        col_l, col_r = st.columns(2)
+
+        with col_l:
+            label_df = pd.DataFrame({
+                "label": ["Text A closer", "Text B closer"],
+                "count": [dev_labels[True], dev_labels[False]],
+            })
+            fig = px.bar(
+                label_df,
+                x="label",
+                y="count",
+                text="count",
+            )
+            fig.update_traces(textposition="outside")
+            fig.update_layout(
+                title=dict(text="Dev label distribution", font=dict(family="Playfair Display", size=14, color=FONT_COLOR)),
+                yaxis_title="Triples",
+                xaxis_title="",
+            )
+            style_plotly(fig, height=300, margin_t=50, margin_b=40)
+            st.plotly_chart(fig, width="stretch")
+
+        with col_r:
+            reuse_df = pd.DataFrame({
+                "category": ["Unique story texts", "Repeated positions"],
+                "count": [unique_story_df.shape[0], repeated_slots],
+            })
+            fig = go.Figure(go.Pie(
+                labels=reuse_df["category"],
+                values=reuse_df["count"],
+                hole=0.55,
+                marker=dict(colors=["#c8a96e", "#6e9ec8"]),
+                textinfo="label+percent",
+            ))
+            fig.update_layout(
+                title=dict(text="Dev set composition across 600 text slots", font=dict(family="Playfair Display", size=14, color=FONT_COLOR)),
+                paper_bgcolor=PLOT_BG,
+                plot_bgcolor=PLOT_BG,
+                font=dict(family="JetBrains Mono", color=FONT_COLOR),
+                height=300,
+                margin=dict(l=10, r=10, t=50, b=20),
+            )
+            st.plotly_chart(fig, width="stretch")
+
+        st.markdown(
+            "<div class='baseline-note'>The dev split contains 200 ranking triples. Across the 600 anchor/A/B positions, only 479 unique stories appear, which means some stories are intentionally reused across different comparisons.</div>",
+            unsafe_allow_html=True
+        )
+
+    with tab2:
+        st.markdown("#### Dev Track A — Text Lengths")
+        col_l, col_r = st.columns(2)
+
+        with col_l:
+            fig = px.box(
+                length_df,
+                x="field",
+                y="words",
+                points="outliers",
+                category_orders={"field": ["Anchor", "Text A", "Text B"]},
+            )
+            fig.update_layout(
+                title=dict(text="Word-count spread by field", font=dict(family="Playfair Display", size=14, color=FONT_COLOR)),
+                xaxis_title="",
+                yaxis_title="Words",
+            )
+            style_plotly(fig, height=330, margin_t=50, margin_b=30)
+            st.plotly_chart(fig, width="stretch")
+
+        with col_r:
+            fig = px.histogram(
+                length_df,
+                x="words",
+                color="field",
+                nbins=24,
+                barmode="overlay",
+                category_orders={"field": ["Anchor", "Text A", "Text B"]},
+            )
+            fig.update_traces(opacity=0.70)
+            fig.update_layout(
+                title=dict(text="Distribution of word counts", font=dict(family="Playfair Display", size=14, color=FONT_COLOR)),
+                xaxis_title="Words",
+                yaxis_title="Count",
+            )
+            style_plotly(fig, height=330, margin_t=50, margin_b=30)
+            st.plotly_chart(fig, width="stretch")
+
+        summary = (
+            length_df.groupby("field")[["words", "chars"]]
+            .agg(["mean", "median", "min", "max"])
+            .round(1)
+        )
+        summary.columns = [" ".join(col).strip() for col in summary.columns.to_flat_index()]
+        summary = summary.reset_index()
+
+        st.markdown("#### Length Summary Table")
+        st.dataframe(summary, width="stretch", hide_index=True)
+
+    with tab3:
+        st.markdown("#### Aspect Coverage & Metadata")
+        col_l, col_r = st.columns(2)
+
+        with col_l:
+            fig = px.box(
+                aspect_len_df,
+                x="aspect",
+                y="words",
+                points="outliers",
+                category_orders={"aspect": ["CoA", "Outcomes", "Theme"]},
+            )
+            fig.update_layout(
+                title=dict(text="Aspect length by type", font=dict(family="Playfair Display", size=14, color=FONT_COLOR)),
+                xaxis_title="",
+                yaxis_title="Words",
+            )
+            style_plotly(fig, height=320, margin_t=50, margin_b=30)
+            st.plotly_chart(fig, width="stretch")
+
+        with col_r:
+            fig = px.bar(
+                resolution_df,
+                x="resolution_status",
+                y="count",
+                text="count",
+                category_orders={"resolution_status": ["resolved", "partial", "unresolved", "unknown"]},
+            )
+            fig.update_traces(textposition="outside")
+            fig.update_layout(
+                title=dict(text="Resolution status in aspect cache", font=dict(family="Playfair Display", size=14, color=FONT_COLOR)),
+                xaxis_title="",
+                yaxis_title="Stories",
+            )
+            style_plotly(fig, height=320, margin_t=50, margin_b=30)
+            st.plotly_chart(fig, width="stretch")
+
+        st.markdown("#### Most Frequent Theme Phrases")
+        fig = px.bar(
+            theme_df.sort_values("count"),
+            x="count",
+            y="theme_phrase",
+            orientation="h",
+            text="count",
+        )
+        fig.update_traces(textposition="outside")
+        fig.update_layout(
+            title=dict(text="Top theme phrases in the dev story universe", font=dict(family="Playfair Display", size=14, color=FONT_COLOR)),
+            xaxis_title="Frequency",
+            yaxis_title="",
+        )
+        style_plotly(fig, height=420, margin_t=55, margin_b=30)
+        st.plotly_chart(fig, width="stretch")
+
+        st.markdown(
+            "<div class='baseline-note'>The aspect cache is complete for the 479 unique stories in the dev split. CoA descriptions are the longest on average, outcomes are more compressed, and themes are short high-level abstractions.</div>",
+            unsafe_allow_html=True
+        )
+
+    with tab4:
+        st.markdown("#### Synthetic Training Data")
+        col_s1, col_s2, col_s3, col_s4 = st.columns(4)
+        synth_label_counts = Counter(bool(r.get("text_a_is_closer")) for r in synth) if synth else Counter()
+        synth_new_label_counts = Counter(bool(r.get("text_a_is_closer")) for r in synth_new) if synth_new else Counter()
+
+        for col, val, label in [
+            (col_s1, f"{len(synth):,}", "Synthetic v1 rows"),
+            (col_s2, f"{len(synth_new):,}", "Synthetic v2 rows"),
+            (col_s3, f"{synth_label_counts[True]}/{synth_label_counts[False]}", "v1 label balance"),
+            (col_s4, f"{synth_new_label_counts[True]}/{synth_new_label_counts[False]}", "v2 label balance"),
+        ]:
+            col.markdown(
+                f"<div class='metric-box'>"
+                f"<div class='metric-val' style='font-size:1.6rem'>{val}</div>"
+                f"<div class='metric-label'>{label}</div>"
+                f"</div>",
+                unsafe_allow_html=True)
+
+        col_l, col_r = st.columns(2)
+
+        with col_l:
+            if not gen_df.empty:
+                fig = px.bar(gen_df.sort_values("count"),
+                             x="count", y="generation_type",
+                             orientation="h", text="count")
+                fig.update_traces(textposition="outside")
+                fig.update_layout(
+                    title=dict(text="Synthetic v2 generation types", font=dict(family="Playfair Display", size=14, color=FONT_COLOR)),
+                    xaxis_title="Rows",
+                    yaxis_title="",
+                )
+                style_plotly(fig, height=340, margin_t=50, margin_b=30)
+                st.plotly_chart(fig, width="stretch")
+            else:
+                st.info("Synthetic v2 metadata not available.")
+
+        with col_r:
+            if not genre_df.empty:
+                fig = px.bar(genre_df.sort_values("count"),
+                             x="count", y="seed_genre",
+                             orientation="h", text="count")
+                fig.update_traces(textposition="outside")
+                fig.update_layout(
+                    title=dict(text="Synthetic v2 top seed genres", font=dict(family="Playfair Display", size=14, color=FONT_COLOR)),
+                    xaxis_title="Rows",
+                    yaxis_title="",
+                )
+                style_plotly(fig, height=340, margin_t=50, margin_b=30)
+                st.plotly_chart(fig, width="stretch")
+            else:
+                st.info("Synthetic v2 seed genres not available.")
+
+        st.markdown(
+            "<div class='baseline-note'>The newer synthetic set is smaller than v1 but provides richer metadata: generation_type, seed_genre, and seed_archetype. This makes it useful for controlled curriculum-style experiments and harder negative sampling.</div>",
+            unsafe_allow_html=True
+        )
+
+
+# PAGE 3 — ABLATION RESULTS
 
 elif page == "Ablation Results":
     st.markdown("## 📊 Ablation Results")
@@ -480,8 +975,6 @@ elif page == "Ablation Results":
     st.markdown("---")
 
     # ── Bar chart ──────────────────────────────────────────────────────────
-    df_plot = df[df["Track A %"].notna()].copy()
-
     tab1, tab2 = st.tabs(["Track A — Classification", "Track B — Embedding Ranking"])
 
     for tab, track_col, nt_val in [
@@ -616,7 +1109,7 @@ elif page == "Ablation Results":
             unsafe_allow_html=True)
 
 
-# PAGE 3 — ASPECT EXPLORER
+# PAGE 4 — ASPECT EXPLORER
 
 elif page == "Aspect Explorer":
     st.markdown("## 🔍 Aspect Explorer")
@@ -644,7 +1137,7 @@ elif page == "Aspect Explorer":
             text = t.get(field, "")
             if text and text not in stories:
                 title = t.get(detail_key, {}).get("title", "")
-                norm  = " ".join(text.split())
+                norm  = norm_text(text)
                 entry = aspects.get(norm, {})
                 stories[text] = {
                     "title":    title or "(untitled)",
@@ -764,7 +1257,7 @@ elif page == "Aspect Explorer":
             unsafe_allow_html=True)
 
 
-# PAGE 4 — ERROR ANALYSIS
+# PAGE 5 — ERROR ANALYSIS
 
 elif page == "Error Analysis":
     st.markdown("## ❌ Error Analysis")
