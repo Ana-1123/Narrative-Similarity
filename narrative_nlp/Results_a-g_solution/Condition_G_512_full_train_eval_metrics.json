@@ -1,0 +1,34 @@
+{
+  "condition": "G",
+  "name": "Aspect heads",
+  "condition_note": "Full-text encoder with three auxiliary aspect heads.",
+  "input_mode": "full_text",
+  "max_len": 512,
+  "use_aspect_heads": true,
+  "use_multiview": false,
+  "active_aspects": [
+    "coa",
+    "outcomes",
+    "theme"
+  ],
+  "use_soft_labels": false,
+  "track_a_test": {
+    "accuracy": 0.695,
+    "macro_f1": 0.6948092557831279,
+    "tp": 144,
+    "tn": 134,
+    "fp": 58,
+    "fn": 64
+  },
+  "track_b_test": {
+    "accuracy": 0.6725,
+    "macro_f1": 0.6715948332574893,
+    "tp": 124,
+    "tn": 145,
+    "fp": 61,
+    "fn": 70,
+    "missing": 0,
+    "embedding_dim": 1792
+  },
+  "cv": null
+}

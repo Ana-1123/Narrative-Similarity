@@ -1,0 +1,32 @@
+{
+  "condition": "N",
+  "name": "CoA+Outcomes heads + appended aspects",
+  "input_mode": "full_plus_coa_outcomes",
+  "max_len": 384,
+  "use_aspect_heads": true,
+  "use_multiview": false,
+  "active_aspects": [
+    "coa",
+    "outcomes"
+  ],
+  "use_soft_labels": false,
+  "track_a_test": {
+    "accuracy": 0.6175,
+    "macro_f1": 0.6173828234881501,
+    "tp": 127,
+    "tn": 120,
+    "fp": 72,
+    "fn": 81
+  },
+  "track_b_test": {
+    "accuracy": 0.575,
+    "macro_f1": 0.574617155438459,
+    "tp": 109,
+    "tn": 121,
+    "fp": 85,
+    "fn": 85,
+    "missing": 0,
+    "embedding_dim": 1024
+  },
+  "cv": null
+}

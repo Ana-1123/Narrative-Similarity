@@ -1,0 +1,33 @@
+{
+  "condition": "M",
+  "name": "CoA+Outcomes heads",
+  "condition_note": "",
+  "input_mode": "full_text",
+  "max_len": 512,
+  "use_aspect_heads": true,
+  "use_multiview": false,
+  "active_aspects": [
+    "coa",
+    "outcomes"
+  ],
+  "use_soft_labels": false,
+  "track_a_test": {
+    "accuracy": 0.6825,
+    "macro_f1": 0.682259708903153,
+    "tp": 142,
+    "tn": 131,
+    "fp": 61,
+    "fn": 66
+  },
+  "track_b_test": {
+    "accuracy": 0.6775,
+    "macro_f1": 0.6770458457188506,
+    "tp": 128,
+    "tn": 143,
+    "fp": 63,
+    "fn": 66,
+    "missing": 0,
+    "embedding_dim": 1536
+  },
+  "cv": null
+}

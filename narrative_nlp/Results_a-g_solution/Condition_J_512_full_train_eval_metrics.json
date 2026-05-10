@@ -1,0 +1,32 @@
+{
+  "condition": "J",
+  "name": "CoA head only",
+  "condition_note": "",
+  "input_mode": "full_text",
+  "max_len": 512,
+  "use_aspect_heads": true,
+  "use_multiview": false,
+  "active_aspects": [
+    "coa"
+  ],
+  "use_soft_labels": false,
+  "track_a_test": {
+    "accuracy": 0.665,
+    "macro_f1": 0.6643202485015566,
+    "tp": 142,
+    "tn": 124,
+    "fp": 68,
+    "fn": 66
+  },
+  "track_b_test": {
+    "accuracy": 0.66,
+    "macro_f1": 0.6598639455765813,
+    "tp": 128,
+    "tn": 136,
+    "fp": 70,
+    "fn": 66,
+    "missing": 0,
+    "embedding_dim": 1280
+  },
+  "cv": null
+}
