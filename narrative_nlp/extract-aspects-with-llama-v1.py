@@ -28,7 +28,7 @@ DATA_FILES = {
     "test_track_b": "test_track_b.jsonl",   # 849 individual story texts
 }
 
-CACHE_PATH  = "aspects_cache_llm_extracted.json"
+CACHE_PATH  = "aspects_cache_v2.json"
 OLLAMA_MODEL  = "llama3.1:8b"
 OLLAMA_URL    = "http://localhost:11434/api/generate"
 
