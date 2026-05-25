@@ -8,7 +8,7 @@ import json
 import re
 from pathlib import Path
 from collections import Counter
-from typing import Dict, List, Tuple, Any
+from typing import Dict
 
 import numpy as np
 import pandas as pd
@@ -24,25 +24,25 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ======================== DESIGN TOKENS ========================
+# ======================== DESIGN TOKENS (LIGHT GRAY THEME) ========================
 STYLE = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=JetBrains+Mono:wght@300;400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&display=swap');
 
 :root {
-    --bg:        #0d0f14;
-    --surface:   #14171f;
-    --border:    #1e2330;
+    --bg:        #f5f7fa;
+    --surface:   #ffffff;
+    --border:    #e0e4e8;
     --accent:    #c8a96e;
     --accent2:   #6e9ec8;
     --accent3:   #c86e9e;
-    --text:      #e8e4dc;
-    --muted:     #6b7280;
-    --success:   #6ec88a;
-    --danger:    #c86e6e;
-    --coa:       #6e9ec8;
-    --out:       #c8a96e;
-    --theme:     #a86ec8;
+    --text:      #1a2a3a;
+    --muted:     #5a6a7a;
+    --success:   #2e7d64;
+    --danger:    #b73c2c;
+    --coa:       #3a6ea5;
+    --out:       #b88b4a;
+    --theme:     #8a5ea8;
 }
 
 html, body, [class*="css"] {
@@ -74,6 +74,7 @@ code, pre, .mono {
     border-radius: 8px;
     padding: 1.2rem 1.4rem;
     margin-bottom: 0.8rem;
+    color: var(--text);
 }
 .card-light {
     background: #ffffff;
@@ -107,11 +108,11 @@ code, pre, .mono {
     text-transform: uppercase;
     margin-right: 4px;
 }
-.pill-coa   { background: #1a2a3a; color: var(--coa);   border: 1px solid var(--coa);   }
-.pill-out   { background: #3a2a1a; color: var(--out);   border: 1px solid var(--out);   }
-.pill-thm   { background: #2a1a3a; color: var(--theme); border: 1px solid var(--theme); }
-.pill-match { background: #1a3a2a; color: var(--success);border: 1px solid var(--success);}
-.pill-miss  { background: #3a1a1a; color: var(--danger); border: 1px solid var(--danger); }
+.pill-coa   { background: #e0ecf9; color: var(--coa);   border: 1px solid var(--coa);   }
+.pill-out   { background: #f9ede0; color: var(--out);   border: 1px solid var(--out);   }
+.pill-thm   { background: #f0e6f4; color: var(--theme); border: 1px solid var(--theme); }
+.pill-match { background: #dff0e8; color: var(--success);border: 1px solid var(--success);}
+.pill-miss  { background: #fbe9e7; color: var(--danger); border: 1px solid var(--danger); }
 
 .metric-box {
     background: var(--surface);
@@ -485,14 +486,14 @@ with st.sidebar:
     st.markdown("""
 <div style='padding: 0.5rem 0 1.2rem 0;'>
   <div style='font-family: JetBrains Mono, monospace; font-size: 0.65rem;
-              text-transform: uppercase; letter-spacing: 0.12em; color: #6b7280;
+              text-transform: uppercase; letter-spacing: 0.12em; color: #5a6a7a;
               margin-bottom: 4px;'>Master Thesis · 2026</div>
   <div style='font-family: Playfair Display, serif; font-size: 1.3rem;
-              font-weight: 700; line-height: 1.2; color: #e8e4dc;'>
+              font-weight: 700; line-height: 1.2; color: #1a2a3a;'>
     Aspect-Aware<br>Narrative<br>Similarity
   </div>
   <div style='font-family: JetBrains Mono, monospace; font-size: 0.7rem;
-              color: #6b7280; margin-top: 8px;'>
+              color: #5a6a7a; margin-top: 8px;'>
     Alexandru Ioan Cuza University<br>Iași · Computational Linguistics MSc
   </div>
 </div>
@@ -501,133 +502,17 @@ with st.sidebar:
 
     page = st.radio(
         "Navigate",
-        # ["📖 Live Demo",
         ["🗂 Dataset",
          "📊 Ablation Results",
          "🔬 Aspect Extraction (V1/V2/V3)",
          "📈 Aspect Informativeness",
          "🔍 Aspect Explorer"],
-        #  "❌ Error Analysis"],
         label_visibility="collapsed",
     )
     page = page.split(" ", 1)[1]
 
-#     st.markdown("<hr>", unsafe_allow_html=True)
-#     st.markdown("""
-# <div style='font-family: JetBrains Mono, monospace; font-size: 0.68rem; color: #6b7280; line-height: 1.8;'>
-#   <b style='color:#c8a96e;'>Model:</b> RoBERTa-large<br>
-# </div>
-# """, unsafe_allow_html=True)
-
-# ======================== PAGE: Live Demo ========================
-if page == "Live Demo":
-    st.markdown("## 📖 Live Demonstration")
-    st.markdown("<div class='section-title'>Aspect extraction · Similarity comparison</div>", unsafe_allow_html=True)
-
-    triples = load_dev_triples()
-    aspects = load_aspects_cache(3)  # use V3 for clean display
-
-    if not triples:
-        st.warning("Dev triples not found.")
-        st.stop()
-
-    # Story selector
-    col_l, col_r = st.columns([2, 1])
-    with col_l:
-        mode = st.radio("Input mode", ["Pick from dataset", "Type my own"], horizontal=True)
-
-    if mode == "Pick from dataset" and triples:
-        with col_r:
-            idx = st.number_input("Triple index (0–199)", 0, len(triples)-1, value=0, step=1)
-        triple = triples[int(idx)]
-        anchor_text = triple["anchor_text"]
-        coa_gold    = triple.get("course_of_actions", [None, None])
-        out_gold    = triple.get("outcomes",          [None, None])
-        thm_gold    = triple.get("abstract_theme",    [None, None])
-        label_gold  = triple.get("text_a_is_closer")
-    else:
-        anchor_text = st.text_area("Paste a story summary:", height=140)
-        coa_gold = out_gold = thm_gold = [None, None]
-        label_gold = None
-        triple = None
-
-    if not anchor_text.strip():
-        st.info("Select a triple index or paste a story summary to begin.")
-        st.stop()
-
-    st.markdown("#### Anchor Story")
-    st.markdown(f"<div class='story-block'>{anchor_text}</div>", unsafe_allow_html=True)
-
-    norm_key = norm_text(anchor_text)
-    entry = aspects.get(norm_key, {})
-    coa      = entry.get("coa",      "")
-    outcomes = entry.get("outcomes", "")
-    theme    = entry.get("theme",    "")
-    has_asp = bool(coa or outcomes or theme)
-
-    st.markdown("---")
-    st.markdown("#### Extracted Aspects")
-    if not has_asp:
-        st.warning("No pre-extracted aspects found for this story.")
-    else:
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            st.markdown("<span class='pill pill-coa'>CoA</span> Course of Action", unsafe_allow_html=True)
-            st.markdown(f"<div class='card card-accent-coa' style='min-height:120px'><small>{coa or '—'}</small></div>", unsafe_allow_html=True)
-        with c2:
-            st.markdown("<span class='pill pill-out'>OUT</span> Outcomes", unsafe_allow_html=True)
-            st.markdown(f"<div class='card card-accent-out' style='min-height:120px'><small>{outcomes or '—'}</small></div>", unsafe_allow_html=True)
-        with c3:
-            st.markdown("<span class='pill pill-thm'>THM</span> Abstract Theme", unsafe_allow_html=True)
-            st.markdown(f"<div class='card card-accent-thm' style='min-height:120px'><small>{theme or '—'}</small></div>", unsafe_allow_html=True)
-
-    if triple is not None:
-        st.markdown("---")
-        st.markdown("#### Similarity Comparison")
-        text_a = triple["text_a"]
-        text_b = triple["text_b"]
-
-        def match_badge(match_list, idx):
-            if match_list[0] is None:
-                return ""
-            val = match_list[idx]
-            return f"<span class='pill pill-match'>✓ Match</span>" if val else f"<span class='pill pill-miss'>✗ No match</span>"
-
-        for story, label, story_idx in [(text_a, "Text A", 0), (text_b, "Text B", 1)]:
-            is_closer = (label == "Text A" and label_gold) or (label == "Text B" and not label_gold)
-            gold_str = "<span class='badge-correct'>← Gold: closer</span>" if is_closer else "<span class='badge-wrong'>Gold: not closer</span>" if label_gold is not None else ""
-            st.markdown(f"<div class='section-title'>{label} &nbsp;{gold_str}</div>", unsafe_allow_html=True)
-            norm_s = norm_text(story)
-            s_entry = aspects.get(norm_s, {})
-            col_txt, col_asp = st.columns([3, 2])
-            with col_txt:
-                st.markdown(f"<div class='story-block'>{story[:400]}{'…' if len(story)>400 else ''}</div>", unsafe_allow_html=True)
-            with col_asp:
-                coa_badge = match_badge(coa_gold, story_idx)
-                out_badge = match_badge(out_gold, story_idx)
-                thm_badge = match_badge(thm_gold, story_idx)
-                st.markdown(
-                    f"<div class='card'>"
-                    f"<div style='margin-bottom:6px'><span class='pill pill-coa'>CoA</span>{coa_badge}</div>"
-                    f"<div style='color:#ffffff;font-size:0.8em;margin-bottom:10px'>{s_entry.get('coa','—')[:180]}</div>"
-                    f"<div style='margin-bottom:6px'><span class='pill pill-out'>OUT</span>{out_badge}</div>"
-                    f"<div style='color:#ffffff;font-size:0.8em;margin-bottom:10px'>{s_entry.get('outcomes','—')[:150]}</div>"
-                    f"<div style='margin-bottom:6px'><span class='pill pill-thm'>THM</span>{thm_badge}</div>"
-                    f"<div style='color:#ffffff;font-size:0.8em'>{s_entry.get('theme','—')[:120]}</div>"
-                    f"</div>",
-                    unsafe_allow_html=True)
-
-        if coa_gold[0] is not None:
-            st.markdown("---")
-            st.markdown("<div class='section-title'>Gold aspect label pattern</div>", unsafe_allow_html=True)
-            cols = st.columns(3)
-            for c, (asp_name, asp_labels) in zip(cols, [("Course of Action", coa_gold), ("Outcomes", out_gold), ("Abstract Theme", thm_gold)]):
-                pattern = {(True, True): "Both match anchor", (True, False): "Only A matches", (False, True): "Only B matches", (False, False): "Neither matches"}.get(tuple(asp_labels), "Unknown")
-                c.markdown(f"<div class='metric-box'><div class='metric-label'>{asp_name}</div><div style='font-family: JetBrains Mono; font-size:0.85rem; color: #c8a96e; margin-top:6px'>{pattern}</div></div>", unsafe_allow_html=True)
-
 # ======================== PAGE: Dataset ========================
-# ======================== PAGE: Dataset (IMPROVED LAYOUT) ========================
-elif page == "Dataset":
+if page == "Dataset":
     st.markdown("## 🗂 Dataset")
     st.markdown("<div class='section-title'>Exploratory Data Analysis</div>", unsafe_allow_html=True)
 
@@ -670,7 +555,7 @@ elif page == "Dataset":
         return stats, word_lengths, char_lengths
 
     dev_stats, dev_words, _ = compute_dataset_stats("Development (Track A)", dev, is_ranking=True)
-    test_a_stats, test_a_words, _ = compute_dataset_stats("Test (Track A)", test_a, is_ranking=False)
+    test_a_stats, test_a_words, _ = compute_dataset_stats("Test (Track A)", test_a, is_ranking=True)
     test_b_stats, test_b_words, _ = compute_dataset_stats("Test (Track B)", test_b, is_ranking=False)
     synth_stats, synth_words, _ = compute_dataset_stats("Synthetic (Classification)", synth, is_ranking=True)
 
@@ -701,7 +586,6 @@ elif page == "Dataset":
     st.markdown("### Text Length Distribution")
     col_dist1, col_dist2 = st.columns(2)
     
-    # Prepare combined data for plots
     data_for_box = []
     for words, name in [(dev_words, "Dev"), (test_a_words, "Test A"), (test_b_words, "Test B"), (synth_words, "Synth")]:
         for w in words:
@@ -710,24 +594,29 @@ elif page == "Dataset":
     
     with col_dist1:
         fig = px.box(box_df, x="Dataset", y="Words", category_orders={"Dataset": ["Dev", "Test A", "Test B", "Synth"]})
-        fig.update_layout(title=dict(text="Word‑count distribution by dataset", font=dict(family="Playfair Display", size=14, color="#e8e4dc")), 
+        fig.update_layout(title=dict(text="Word‑count distribution by dataset", font=dict(family="Playfair Display", size=14, color="#1a2a3a")), 
                          xaxis_title="", yaxis_title="Word count",
-                         paper_bgcolor="#14171f", plot_bgcolor="#14171f", font=dict(family="JetBrains Mono", color="#e8e4dc"), 
+                         paper_bgcolor="#f5f7fa", plot_bgcolor="#f5f7fa", font=dict(family="JetBrains Mono", color="#1a2a3a"), 
                          margin=dict(l=10, r=10, t=50, b=30), height=350, showlegend=False)
-        fig.update_xaxes(gridcolor="#1e2330")
-        fig.update_yaxes(gridcolor="#1e2330")
+        fig.update_xaxes(gridcolor="#e0e4e8")
+        fig.update_yaxes(gridcolor="#e0e4e8")
         st.plotly_chart(fig, width="stretch", use_container_width=True)
     
     with col_dist2:
         fig = px.histogram(box_df, x="Words", color="Dataset", nbins=30, barmode="overlay", 
-                          category_orders={"Dataset": ["Dev", "Test A", "Test B", "Synth"]})
+                          category_orders={"Dataset": ["Dev", "Test A", "Test B", "Synth"]},     color_discrete_map={
+        "Dev": None,          # keep default blue
+        "Test A": None,       # keep default orange
+        "Test B": None,  # green (replaces pink)
+        "Synth": "#2ca02c"         # keep default red
+    })
         fig.update_traces(opacity=0.65)
-        fig.update_layout(title=dict(text="Word‑length frequency distribution", font=dict(family="Playfair Display", size=14, color="#e8e4dc")), 
+        fig.update_layout(title=dict(text="Word‑length frequency distribution", font=dict(family="Playfair Display", size=14, color="#1a2a3a")), 
                          xaxis_title="Word count", yaxis_title="Frequency",
-                         paper_bgcolor="#14171f", plot_bgcolor="#14171f", font=dict(family="JetBrains Mono", color="#e8e4dc"), 
+                         paper_bgcolor="#f5f7fa", plot_bgcolor="#f5f7fa", font=dict(family="JetBrains Mono", color="#1a2a3a"), 
                          margin=dict(l=10, r=10, t=50, b=30), height=350, showlegend=True)
-        fig.update_xaxes(gridcolor="#1e2330")
-        fig.update_yaxes(gridcolor="#1e2330")
+        fig.update_xaxes(gridcolor="#e0e4e8")
+        fig.update_yaxes(gridcolor="#e0e4e8")
         fig.update_layout(legend=dict(x=0.65, y=0.95))
         st.plotly_chart(fig, width="stretch", use_container_width=True)
 
@@ -738,7 +627,7 @@ elif page == "Dataset":
     with st.container():
         st.markdown(
             f"""
-            <div class='card' style='background: #0d0f14;'>
+            <div class='card' style='background: #ffffff;'>
             <ul style='margin-bottom: 0;'>
             <li><strong>Development Track A</strong> – {len(dev)} ranking triples, perfectly balanced labels. Each triple contains an anchor narrative and two candidates with binary similarity judgments. Contains {n_unique} unique stories across anchor/candidate slots.</li>
             <li><strong>Test Track A</strong> – {len(test_a)} unlabeled instances, same ranking triple format for zero‑shot and few‑shot evaluation.</li>
@@ -756,7 +645,6 @@ elif page == "Dataset":
     st.markdown("### Development Set Annotation Analysis")
     label_df = build_dev_label_analysis()
     if not label_df.empty:
-        # Compute aspect agreement across A vs B candidates
         coa_agree = (label_df["coa_match_a"] == label_df["coa_match_b"]).sum() / len(label_df) * 100
         out_agree = (label_df["outcomes_match_a"] == label_df["outcomes_match_b"]).sum() / len(label_df) * 100
         theme_agree = (label_df["theme_match_a"] == label_df["theme_match_b"]).sum() / len(label_df) * 100
@@ -769,7 +657,6 @@ elif page == "Dataset":
         ]:
             col.markdown(f"<div class='metric-box'><div class='metric-val' style='font-size:2rem'>{val}</div><div class='metric-label'>{label}</div></div>", unsafe_allow_html=True)
         
-        # Two charts side by side: agreement % and match rate %
         col_chart1, col_chart2 = st.columns(2)
         with col_chart1:
             agree_df = pd.DataFrame({
@@ -778,12 +665,12 @@ elif page == "Dataset":
             })
             fig = px.bar(agree_df, x="Aspect", y="Agreement %", text="Agreement %", range_y=[0, 100])
             fig.update_traces(marker_color="#c8a96e", textposition="outside", texttemplate="%{text:.1f}%")
-            fig.update_layout(title=dict(text="Aspect matching consistency (A vs B)", font=dict(family="Playfair Display", size=14, color="#e8e4dc")), 
+            fig.update_layout(title=dict(text="Aspect matching consistency (A vs B)", font=dict(family="Playfair Display", size=14, color="#1a2a3a")), 
                              xaxis_title="", yaxis_title="Agreement (%)",
-                             paper_bgcolor="#14171f", plot_bgcolor="#14171f", font=dict(family="JetBrains Mono", color="#e8e4dc"), 
+                             paper_bgcolor="#f5f7fa", plot_bgcolor="#f5f7fa", font=dict(family="JetBrains Mono", color="#1a2a3a"), 
                              margin=dict(l=10, r=10, t=50, b=30), height=330, showlegend=False)
-            fig.update_xaxes(gridcolor="#1e2330")
-            fig.update_yaxes(gridcolor="#1e2330")
+            fig.update_xaxes(gridcolor="#e0e4e8")
+            fig.update_yaxes(gridcolor="#e0e4e8")
             st.plotly_chart(fig, width="stretch", use_container_width=True)
         
         with col_chart2:
@@ -796,12 +683,12 @@ elif page == "Dataset":
             })
             fig = px.bar(match_df, x="Aspect", y="Match Rate %", text="Match Rate %", range_y=[0, 100])
             fig.update_traces(marker_color="#6e9ec8", textposition="outside", texttemplate="%{text:.1f}%")
-            fig.update_layout(title=dict(text="Aspect matching frequency (overall)", font=dict(family="Playfair Display", size=14, color="#e8e4dc")), 
+            fig.update_layout(title=dict(text="Aspect matching frequency (overall)", font=dict(family="Playfair Display", size=14, color="#1a2a3a")), 
                              xaxis_title="", yaxis_title="Match Rate (%)",
-                             paper_bgcolor="#14171f", plot_bgcolor="#14171f", font=dict(family="JetBrains Mono", color="#e8e4dc"), 
+                             paper_bgcolor="#f5f7fa", plot_bgcolor="#f5f7fa", font=dict(family="JetBrains Mono", color="#1a2a3a"), 
                              margin=dict(l=10, r=10, t=50, b=30), height=330, showlegend=False)
-            fig.update_xaxes(gridcolor="#1e2330")
-            fig.update_yaxes(gridcolor="#1e2330")
+            fig.update_xaxes(gridcolor="#e0e4e8")
+            fig.update_yaxes(gridcolor="#e0e4e8")
             st.plotly_chart(fig, width="stretch", use_container_width=True)
         
         st.markdown("<div class='baseline-note'>Agreement measures how often both candidates share the same aspect label (both match or both do not match the anchor). Match rate is the frequency with which a candidate is labelled as matching the anchor for that aspect.</div>", unsafe_allow_html=True)
@@ -821,7 +708,7 @@ elif page == "Dataset":
         with col_mod2:
             st.markdown("#### Notes on Synthetic Data")
             st.markdown("""
-            <div class='card' style='background: #0d0f14;'>
+            <div class='card' style='background: #ffffff;'>
             <ul>
             <li>Synthetic pairs are generated using a contrastive prompting strategy.</li>
             <li>Positive pairs are summaries of the same story (Wikidata‑linked); negative pairs are from different stories.</li>
@@ -831,7 +718,6 @@ elif page == "Dataset":
             """, unsafe_allow_html=True)
     else:
         st.info("No synthetic model generation data available.")
-
 
 # ======================== PAGE: Ablation Results ========================
 elif page == "Ablation Results":
@@ -851,9 +737,9 @@ elif page == "Ablation Results":
         {"Cond": "J",  "Name": "CoA + Theme",        "Input":   "CoA+Theme",      "MaxLen": 128, "Heads": "—", "Track A %": None,  "Track B %": None,  "Status": "⏳ Pending",  "Note": ""},
     ]
     NARRATIVE_TEAM = {"Track A %": 64.25, "Track B %": 69.25}
-    PLOT_BG = "#14171f"
-    PLOT_GRID = "#1e2330"
-    FONT_COLOR = "#e8e4dc"
+    PLOT_BG = "#f5f7fa"
+    PLOT_GRID = "#e0e4e8"
+    FONT_COLOR = "#1a2a3a"
 
     df = pd.DataFrame(RESULTS)
     best_a = max((r["Track A %"] for r in RESULTS if r["Track A %"]), default=0)
@@ -880,7 +766,7 @@ elif page == "Ablation Results":
             fig = go.Figure()
             fig.add_trace(go.Bar(x=df_t[track_col], y=df_t["Cond"] + " · " + df_t["Name"], orientation="h", marker_color=colors, text=[f"{v:.2f}%" for v in df_t[track_col]], textposition="outside", textfont=dict(family="JetBrains Mono", size=11, color=FONT_COLOR)))
             fig.add_vline(x=nt_val, line_dash="dash", line_color="#6e6e6e", line_width=1.5)
-            fig.add_annotation(x=nt_val, y=-0.8, text=f"Narrative Team {nt_val}%", showarrow=False, font=dict(family="JetBrains Mono", size=10, color="#6b7280"), xanchor="left")
+            fig.add_annotation(x=nt_val, y=-0.8, text=f"Narrative Team {nt_val}%", showarrow=False, font=dict(family="JetBrains Mono", size=10, color="#5a6a7a"), xanchor="left")
             fig.update_layout(paper_bgcolor=PLOT_BG, plot_bgcolor=PLOT_BG, font=dict(family="JetBrains Mono", color=FONT_COLOR), margin=dict(l=10, r=80, t=30, b=40), xaxis=dict(gridcolor=PLOT_GRID, range=[55, 78], ticksuffix="%"), yaxis=dict(gridcolor=PLOT_GRID), height=380, showlegend=False)
             st.plotly_chart(fig, width="stretch")
 
@@ -902,7 +788,7 @@ elif page == "Aspect Extraction (V1/V2/V3)":
     }
     for ver, desc in descriptions.items():
         st.markdown(
-            f"<div class='card-light' style='white-space: pre-wrap;'>{desc}</div>",
+            f"<div class='card' style='background: #ffffff;'>{desc}</div>",
             unsafe_allow_html=True,
         )
 
@@ -954,7 +840,7 @@ elif page == "Aspect Extraction (V1/V2/V3)":
                 with col:
                     st.markdown(f"<span class='pill {pill_class}'>{label}</span>", unsafe_allow_html=True)
                     st.markdown(
-                        f"<div class='card-light {card_class}'><small>{entry.get(key, '—')}</small></div>",
+                        f"<div class='card {card_class}'><small>{entry.get(key, '—')}</small></div>",
                         unsafe_allow_html=True,
                     )
 
@@ -1029,121 +915,12 @@ elif page == "Aspect Explorer":
                 c1,c2,c3 = st.columns(3)
                 with c1:
                     st.markdown("<span class='pill pill-coa'>CoA</span>", unsafe_allow_html=True)
-                    st.markdown(f"<div class='card-light-blue card-accent-coa'><small>{s['coa'] or '—'}</small></div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='card' style='border-left: 3px solid #3a6ea5;'><small>{s['coa'] or '—'}</small></div>", unsafe_allow_html=True)
                 with c2:
                     st.markdown("<span class='pill pill-out'>Outcomes</span>", unsafe_allow_html=True)
-                    st.markdown(f"<div class='card-light-blue card-accent-out'><small>{s['outcomes'] or '—'}</small></div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='card' style='border-left: 3px solid #b88b4a;'><small>{s['outcomes'] or '—'}</small></div>", unsafe_allow_html=True)
                 with c3:
                     st.markdown("<span class='pill pill-thm'>Theme</span>", unsafe_allow_html=True)
-                    st.markdown(f"<div class='card-light-blue card-accent-thm'><small>{s['theme'] or '—'}</small></div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='card' style='border-left: 3px solid #8a5ea8;'><small>{s['theme'] or '—'}</small></div>", unsafe_allow_html=True)
             else:
                 st.markdown("<span class='pill pill-miss'>No aspects in cache</span>", unsafe_allow_html=True)
-
-# ======================== PAGE: Error Analysis ========================
-elif page == "Error Analysis":
-    st.markdown("## ❌ Error Analysis")
-    st.markdown("<div class='section-title'>Analyse model mistakes by aspect pattern</div>", unsafe_allow_html=True)
-    triples = load_dev_triples()
-    if not triples:
-        st.warning("dev_track_a.jsonl not found.")
-        st.stop()
-    if triples[0].get("course_of_actions") is None:
-        st.warning("Gold aspect labels not present in dev_track_a.jsonl. This page requires the post-release version with course_of_actions, outcomes, abstract_theme columns.")
-        st.stop()
-
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        pred_filter = st.selectbox("Prediction", ["All", "Correct", "Incorrect"])
-    with col2:
-        coa_filter = st.selectbox("CoA pattern", ["Any", "Both match", "Only A", "Only B", "Neither"])
-    with col3:
-        out_filter = st.selectbox("Outcomes pattern", ["Any", "Both match", "Only A", "Only B", "Neither"])
-    with col4:
-        thm_filter = st.selectbox("Theme pattern", ["Any", "Both match", "Only A", "Only B", "Neither"])
-
-    def asp_pattern(labels):
-        if labels[0] is None:
-            return "Unknown"
-        return {(True, True): "Both match", (True, False): "Only A", (False, True): "Only B", (False, False): "Neither"}.get(tuple(labels), "Unknown")
-
-    def simulate_prediction(triple):
-        coa = triple.get("course_of_actions", [False, False])
-        out = triple.get("outcomes", [False, False])
-        thm = triple.get("abstract_theme", [False, False])
-        if any(x is None for x in coa + out + thm):
-            return None
-        score_a = 0.35 * coa[0] + 0.40 * out[0] + 0.25 * thm[0]
-        score_b = 0.35 * coa[1] + 0.40 * out[1] + 0.25 * thm[1]
-        return score_a >= score_b
-
-    rows = []
-    for t in triples:
-        pred = simulate_prediction(t)
-        gold = t.get("text_a_is_closer")
-        correct = (pred == gold) if pred is not None else None
-        rows.append({
-            "triple": t,
-            "pred": pred,
-            "gold": gold,
-            "correct": correct,
-            "coa_pat": asp_pattern(t.get("course_of_actions", [None, None])),
-            "out_pat": asp_pattern(t.get("outcomes", [None, None])),
-            "thm_pat": asp_pattern(t.get("abstract_theme", [None, None])),
-        })
-
-    def match_filter(row_val, filt):
-        return filt == "Any" or row_val == filt
-
-    filtered_rows = [r for r in rows if (pred_filter == "All" or (pred_filter == "Correct" and r["correct"] is True) or (pred_filter == "Incorrect" and r["correct"] is False)) and match_filter(r["coa_pat"], coa_filter) and match_filter(r["out_pat"], out_filter) and match_filter(r["thm_pat"], thm_filter)]
-
-    total_valid = sum(1 for r in rows if r["correct"] is not None)
-    n_correct = sum(1 for r in rows if r["correct"] is True)
-    n_wrong = sum(1 for r in rows if r["correct"] is False)
-
-    col_a, col_b, col_c, col_d = st.columns(4)
-    for c, val, lbl in [(col_a, str(total_valid), "Total triples"), (col_b, f"{n_correct}", "Correct"), (col_c, f"{n_wrong}", "Incorrect"), (col_d, f"{len(filtered_rows)}", "Filtered")]:
-        c.markdown(f"<div class='metric-box'><div class='metric-val'>{val}</div><div class='metric-label'>{lbl}</div></div>", unsafe_allow_html=True)
-
-    st.markdown("---")
-    st.markdown("#### Error distribution by aspect pattern")
-    chart_cols = st.columns(3)
-    for col, (asp_name, pat_key, color) in zip(chart_cols, [("CoA", "coa_pat", "#6e9ec8"), ("Outcomes", "out_pat", "#c8a96e"), ("Theme", "thm_pat", "#a86ec8")]):
-        pat_counts = Counter(r[pat_key] for r in rows if r["correct"] is False)
-        if pat_counts:
-            labels = list(pat_counts.keys())
-            vals = [pat_counts[l] for l in labels]
-            fig = go.Figure(go.Bar(x=labels, y=vals, marker_color=color, text=vals, textposition="outside", textfont=dict(family="JetBrains Mono", size=11, color="#e8e4dc")))
-            fig.update_layout(title=dict(text=f"{asp_name} — errors by pattern", font=dict(family="Playfair Display", size=13, color="#e8e4dc")), paper_bgcolor="#14171f", plot_bgcolor="#14171f", font=dict(family="JetBrains Mono", color="#e8e4dc"), yaxis=dict(gridcolor="#1e2330"), margin=dict(t=40, b=20, l=10, r=10), height=250, showlegend=False)
-            col.plotly_chart(fig, width="stretch")
-
-    st.markdown("---")
-    st.markdown(f"<div class='section-title'>{len(filtered_rows)} triples matching filters</div>", unsafe_allow_html=True)
-    show_n = min(len(filtered_rows), 20)
-    for r in filtered_rows[:show_n]:
-        t = r["triple"]
-        correct = r["correct"]
-        verdict = "<span class='badge-correct'>✓ Correct</span>" if correct else "<span class='badge-wrong'>✗ Incorrect</span>"
-        with st.expander(f"{verdict.replace('<span ', '').split('>')[1].split('<')[0]}  ·  CoA: {r['coa_pat']} · Out: {r['out_pat']} · Thm: {r['thm_pat']}", expanded=False):
-            st.markdown(verdict, unsafe_allow_html=True)
-            col_anc, col_ab = st.columns([1, 2])
-            with col_anc:
-                st.markdown("**Anchor**")
-                st.markdown(f"<div class='story-block'>{t['anchor_text'][:300]}…</div>", unsafe_allow_html=True)
-            with col_ab:
-                for label, text_field, idx in [("Text A", "text_a", 0), ("Text B", "text_b", 1)]:
-                    gold_mark = " ← **Gold closer**" if ((idx == 0 and t["text_a_is_closer"]) or (idx == 1 and not t["text_a_is_closer"])) else ""
-                    st.markdown(f"**{label}**{gold_mark}")
-                    st.markdown(f"<div class='story-block'>{t.get(text_field,'')[:200]}…</div>", unsafe_allow_html=True)
-            asp_html = "<div class='card' style='margin-top:8px'><table style='width:100%;font-family:JetBrains Mono;font-size:0.78em;border-collapse:collapse'>"
-            asp_html += "<tr><th style='text-align:left;padding:3px 8px;color:#6b7280'>Aspect</th><th style='padding:3px 8px;color:#6b7280'>vs A</th><th style='padding:3px 8px;color:#6b7280'>vs B</th></tr>"
-            for asp_name, field in [("CoA", "course_of_actions"), ("Outcomes", "outcomes"), ("Abstract Theme", "abstract_theme")]:
-                lbl = t.get(field, [None, None])
-                def cell(v):
-                    if v is None: return "—"
-                    return "✓" if v else "✗"
-                asp_html += f"<tr><td style='padding:3px 8px'>{asp_name}</td><td style='padding:3px 8px;text-align:center;color:{'#6ec88a' if lbl[0] else '#c86e6e'}'>{cell(lbl[0])}</td><td style='padding:3px 8px;text-align:center;color:{'#6ec88a' if lbl[1] else '#c86e6e'}'>{cell(lbl[1])}</td></tr>"
-            asp_html += "</table></div>"
-            st.markdown(asp_html, unsafe_allow_html=True)
-
-    if len(filtered_rows) > show_n:
-        st.markdown(f"<div class='baseline-note'>Showing first {show_n} of {len(filtered_rows)} matching triples.</div>", unsafe_allow_html=True)
