@@ -503,10 +503,10 @@ with st.sidebar:
     page = st.radio(
         "Navigate",
         ["🗂 Dataset",
-         "📊 Ablation Results",
          "🔬 Aspect Extraction (V1/V2/V3)",
          "📈 Aspect Informativeness",
-         "🔍 Aspect Explorer"],
+         "🔍 Aspect Explorer",
+         "📊 Aspect-Aware Model Variants"],
         label_visibility="collapsed",
     )
     page = page.split(" ", 1)[1]
@@ -720,61 +720,66 @@ if page == "Dataset":
         st.info("No synthetic model generation data available.")
 
 # ======================== PAGE: Ablation Results ========================
-elif page == "Ablation Results":
-    st.markdown("## 📊 Ablation Results")
-    st.markdown("<div class='section-title'>All experimental conditions</div>", unsafe_allow_html=True)
+elif page == "Aspect-Aware Model Variants":
+    st.markdown("## 📊 Experimental Results")
+    st.markdown("<div class='section-title'>Aspect‑Aware Residual Fusion Model & Integration Strategies</div>", unsafe_allow_html=True)
 
-    RESULTS = [
-        {"Cond": "A",  "Name": "Baseline",          "Input":   "Full text",      "MaxLen": 128, "Heads": "—", "Track A %": 70.75, "Track B %": 65.75, "Status": "✓ Complete", "Note": "Competition-equivalent"},
-        {"Cond": "B",  "Name": "CoA only",           "Input":   "CoA text",       "MaxLen": 128, "Heads": "—", "Track A %": None,  "Track B %": None,  "Status": "⏳ Pending",  "Note": ""},
-        {"Cond": "C",  "Name": "Outcomes only",      "Input":   "Outcomes text",  "MaxLen": 128, "Heads": "—", "Track A %": None,  "Track B %": None,  "Status": "⏳ Pending",  "Note": ""},
-        {"Cond": "D",  "Name": "Theme only",         "Input":   "Theme text",     "MaxLen": 128, "Heads": "—", "Track A %": None,  "Track B %": None,  "Status": "⏳ Pending",  "Note": ""},
-        {"Cond": "E",  "Name": "Concat aspects",     "Input":   "CoA+Out+Theme",  "MaxLen": 128, "Heads": "—", "Track A %": None,  "Track B %": None,  "Status": "⏳ Pending",  "Note": ""},
-        {"Cond": "F",  "Name": "Extended ctx",       "Input":   "Full text",      "MaxLen": 512, "Heads": "—", "Track A %": None,  "Track B %": None,  "Status": "⏳ Pending",  "Note": ""},
-        {"Cond": "G",  "Name": "Aspect heads",       "Input":   "Full text",      "MaxLen": 128, "Heads": "✓", "Track A %": 68.75, "Track B %": 66.00, "Status": "✓ Complete", "Note": "Old architecture"},
-        {"Cond": "G+", "Name": "Aspect heads (fixed)","Input":  "Full text",      "MaxLen": 128, "Heads": "✓", "Track A %": 64.50, "Track B %": 59.75, "Status": "✓ Complete", "Note": "ModernBERT"},
-        {"Cond": "H",  "Name": "Aspect heads+",      "Input":   "CoA text",       "MaxLen": 128, "Heads": "✓", "Track A %": None,  "Track B %": None,  "Status": "⏳ Pending",  "Note": ""},
-        {"Cond": "J",  "Name": "CoA + Theme",        "Input":   "CoA+Theme",      "MaxLen": 128, "Heads": "—", "Track A %": None,  "Track B %": None,  "Status": "⏳ Pending",  "Note": ""},
+    # ----- 5. Aspect-Aware Residual Fusion Model -----
+    st.markdown("### Aspect‑Aware Residual Fusion Model")
+    st.markdown("""
+    **Fusion strategies** – Attention‑based, Gated, and Concatenation – were evaluated across single‑aspect,
+    two‑aspect, and three‑aspect combinations. All models used a maximum sequence length of 384 tokens
+    and the two‑stage contrastive training protocol.
+    """)
+
+    # Table 5.1: Residual fusion ablation (placeholder values '—')
+    fusion_data = [
+        # Single aspect
+        ("action (CoA) only", "attention", 384, 69.00, 64.25),
+        # ("action (CoA) only", "gated", 384, "—", "—"),
+        # ("action (CoA) only", "concat", 384, "—", "—"),
+        ("outcome only", "attention", 384, 66.50, 66.49),
+        # ("outcome only", "gated", 384, "—", "—"),
+        # ("outcome only", "concat", 384, "—", "—"),
+        # Two aspects
+        ("action + outcome", "attention", 384, 69.50, 68.50),
+        # ("action + outcome", "gated", 384, "—", "—"),
+        # ("action + outcome", "concat", 384, "—", "—"),
+        # Three aspects
+        ("action + outcome + theme", "attention", 384, 68, 65.50),
+        ("action + outcome + theme", "gated", 384, 65.50, 63),
+        ("action + outcome + theme", "concat", 384, 66.75, 65),
     ]
-    NARRATIVE_TEAM = {"Track A %": 64.25, "Track B %": 69.25}
-    PLOT_BG = "#f5f7fa"
-    PLOT_GRID = "#e0e4e8"
-    FONT_COLOR = "#1a2a3a"
-
-    df = pd.DataFrame(RESULTS)
-    best_a = max((r["Track A %"] for r in RESULTS if r["Track A %"]), default=0)
-    best_b = max((r["Track B %"] for r in RESULTS if r["Track B %"]), default=0)
-    complete = sum(1 for r in RESULTS if r["Track A %"] is not None)
-
-    m1, m2, m3, m4, m5 = st.columns(5)
-    for col, val, label in [
-        (m1, f"{best_a:.2f}%", "Best Track A"),
-        (m2, f"{best_b:.2f}%", "Best Track B"),
-        (m3, f"{NARRATIVE_TEAM['Track A %']:.2f}%", "NTeam Track A"),
-        (m4, f"{NARRATIVE_TEAM['Track B %']:.2f}%", "NTeam Track B"),
-        (m5, f"{complete}/{len(RESULTS)}", "Conditions done"),
-    ]:
-        col.markdown(f"<div class='metric-box'><div class='metric-val'>{val}</div><div class='metric-label'>{label}</div></div>", unsafe_allow_html=True)
+    df_fusion = pd.DataFrame(fusion_data, columns=["Aspects Used", "Fusion Type", "Max Len", "Acc. A (%)", "Acc. B (%)"])
+    st.dataframe(df_fusion, width="stretch", hide_index=True)
+    st.markdown("*Table: Performance of aspect‑aware residual fusion models (results pending).*")
 
     st.markdown("---")
-    tab1, tab2 = st.tabs(["Track A — Classification", "Track B — Embedding Ranking"])
-    for tab, track_col, nt_val in [(tab1, "Track A %", NARRATIVE_TEAM["Track A %"]), (tab2, "Track B %", NARRATIVE_TEAM["Track B %"])]:
-        with tab:
-            df_t = df[df[track_col].notna()].copy()
-            df_t = df_t.sort_values(track_col, ascending=True)
-            colors = ["#c8a96e" if v == df_t[track_col].max() else "#6e9ec8" for v in df_t[track_col]]
-            fig = go.Figure()
-            fig.add_trace(go.Bar(x=df_t[track_col], y=df_t["Cond"] + " · " + df_t["Name"], orientation="h", marker_color=colors, text=[f"{v:.2f}%" for v in df_t[track_col]], textposition="outside", textfont=dict(family="JetBrains Mono", size=11, color=FONT_COLOR)))
-            fig.add_vline(x=nt_val, line_dash="dash", line_color="#6e6e6e", line_width=1.5)
-            fig.add_annotation(x=nt_val, y=-0.8, text=f"Narrative Team {nt_val}%", showarrow=False, font=dict(family="JetBrains Mono", size=10, color="#5a6a7a"), xanchor="left")
-            fig.update_layout(paper_bgcolor=PLOT_BG, plot_bgcolor=PLOT_BG, font=dict(family="JetBrains Mono", color=FONT_COLOR), margin=dict(l=10, r=80, t=30, b=40), xaxis=dict(gridcolor=PLOT_GRID, range=[55, 78], ticksuffix="%"), yaxis=dict(gridcolor=PLOT_GRID), height=380, showlegend=False)
-            st.plotly_chart(fig, width="stretch")
 
-    st.markdown("#### All Conditions")
-    display_df = df[["Cond", "Name", "Input", "MaxLen", "Heads", "Track A %", "Track B %", "Status", "Note"]].copy()
-    display_df["Track A %"] = display_df["Track A %"].apply(lambda v: f"{v:.2f}%" if v is not None else "—")
-    display_df["Track B %"] = display_df["Track B %"].apply(lambda v: f"{v:.2f}%" if v is not None else "—")
-    st.dataframe(display_df, width="stretch", hide_index=True)
+    # ----- 6. Aspect Integration as Heads, Inputs, and Multi-View Conditions -----
+    st.markdown("### Aspect Integration as Heads, Inputs, and Multi‑View Conditions")
+    st.markdown("""
+    We compared three integration strategies: **aspect heads** (additional classification heads on top of the full‑text encoder),
+    **appended input** (aspect text concatenated to the raw summary), and **multi‑view** (separate forward passes for each aspect
+    with soft‑label fusion). All models were trained with Stage 1 on synthetic triplets (full text only) and Stage 2 fine‑tuning
+    on the development set using the configured aspect‑aware behaviour. Max sequence length = 384.
+    """)
+    # Table 6.2: Stage 2 only aspect‑aware behaviour (from thesis)
+    stage2_data = [
+        ("J", "Full‑text encoder with CoA head only", 68.50, 68.43, 65.50, 65.46),
+        ("K", "Full‑text encoder with outcomes head only", 68.75, 68.74, 65.50, 65.46),
+        ("L", "Full‑text encoder with theme head only", 65.25, 65.24, 66.50, 66.49),
+        ("M", "Full‑text encoder with CoA and outcomes heads", 67.00, 66.97, 68.75, 68.72),
+        ("H", "Full text + appended CoA and outcomes", 69.25, 69.21, 69.50, 69.49),
+        ("I", "Full text + appended CoA, outcomes, and theme", 67.75, 67.67, 68.75, 68.74),
+        ("N", "CoA+Outcomes heads + appended CoA and outcomes", 70.00, 69.98, 65.00, 64.94),
+        ("O", "Multi‑view (soft labels in Stage 2)", 60.50, 60.48, 59.50, 59.49),
+        ("P", "Multi‑view (separate full/CoA/outcomes/theme forwards)", 62.75, 62.75, 63.75, 63.67),
+    ]
+    df_stage2 = pd.DataFrame(stage2_data, columns=["Cond.", "Description", "Acc A (%)", "Macro-F1 A (%)", "Acc B (%)", "Macro-F1 B (%)"])
+    df_stage2 = df_stage2.fillna("—")
+    st.dataframe(df_stage2, width="stretch", hide_index=True)
+    st.markdown("*Table: Conditions with Stage 1 full‑text only and Stage 2 aspect‑aware behaviour.*")
 
 # ======================== PAGE: Aspect Extraction (V1/V2/V3) ========================
 elif page == "Aspect Extraction (V1/V2/V3)":
