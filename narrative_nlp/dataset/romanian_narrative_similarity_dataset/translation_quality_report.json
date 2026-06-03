@@ -1,0 +1,597 @@
+{
+  "total_translations": 11775,
+  "flagged_count": 58,
+  "flagged_rate": 0.004925690021231423,
+  "length_ratio": {
+    "min": 0.44871794871794873,
+    "median": 0.9431818181818182,
+    "max": 1.5063291139240507
+  },
+  "flag_counts": {
+    "too_short_or_truncated": 51,
+    "repetition": 5,
+    "ellipsis_artifact": 2
+  },
+  "flagged_examples": [
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.591,
+      "source_words": 127,
+      "target_words": 75,
+      "source_preview": "A novice historian relocates to an isolated, ancient villa to organize its sprawling collection of artifacts but soon encounters inexplicable events. Late at night, he hears faint singing in dialects he cannot recognize and glimpses indistinct figures lurking in his peripheral vision. As he investigates the villa’s past, he uncovers documents about former occupants, many of whom vanished under unc",
+      "target_preview": "Un istoric novice se mută într-o vilă izolată, antică, pentru a organiza o colecție imensă de artefacte, dar în curând se confruntă cu evenimente inexplicabile. Pe măsură ce investighează trecutul villei, descoperă documente despre foștii locuitori, mulți dintre care au dispărut în circumstanțe neclare. tulburările se intensifică, mobilierul se mută autonom și aparițiile spectrale se manifestă în "
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.562,
+      "source_words": 144,
+      "target_words": 81,
+      "source_preview": "In a dystopian society, the tech giant NeuroVance has introduced a brain-computer interface called the CortexLink, which boosts human intelligence but also surveils and regulates thoughts and behaviors. The protagonist, a skeptical programmer named Jara, stumbles upon evidence that CortexLink is being used to quash opposition and shape societal narratives. When her own implant starts glitching, al",
+      "target_preview": "Într-o societate distopiană, gigantul tehnologic NeuroVance a introdus o interfață creier-computator numită CortexLink, care îmbunătățește inteligența umană, dar monitorizează și reglează gândurile și comportamentele. Când propriul ei implant începe să se agraveze, lăsându-i să aibă clipe fugace de claritate necontrolată, Jara se aliniază la un grup de rebeli clandestini hotărâți să demoleze domin"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.592,
+      "source_words": 103,
+      "target_words": 61,
+      "source_preview": "In a desolate coastal village, a group of diverse fisherman-turned-guardians defend their community from a relentless sea predator. The villagers, once united in their traditional ways, now face internal strife as they struggle to protect their homes and loved ones. Led by an elderly fisherman with a mysterious past, the guardians must confront their fears and cooperate to survive. Amidst the chao",
+      "target_preview": "Într-un sat de coastă pustiu, un grup de pescari diversificați transformati în gardieni își apără comunitatea de un prădător marin neobosit. În mijlocul haosului, un tânăr ucenic învață adevărata valoare a curajului și a comunității, formând în cele din urmă o legătură care depășește neîncrederea inițială. Povestea explorează temele unității, lupta împotriva necunoscutului și importanța moștenirii"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.583,
+      "source_words": 120,
+      "target_words": 70,
+      "source_preview": "The film revolves around the life of a probation officer, assigned to supervise a convicted felon. The officer's diligence is initially unwavering, yet as the convicted felon's release date approaches, the officer's personal life begins to unravel. A complex web of corruption and deceit ensues, involving the officer's own troubled past and the influence of a charismatic crime boss. As the officer'",
+      "target_preview": "Diligența ofițerului este inițial neclintită, dar pe măsură ce data eliberării condamnatului se apropie, viața personală a ofițerilor începe să se desfășoare. Urmează o rețea complexă de corupție și înșelăciune, care implică propriul trecut agitat al ofițerului și influența unui șef de crimă carismatic. Spirala de coborâre a ofiţerului este marcată de o serie de evenimente catastrofale, care în ce"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.598,
+      "source_words": 169,
+      "target_words": 101,
+      "source_preview": "In a near-future society where cybernetic enhancements are commonplace, a gifted engineer named Lena discovers a secret government program that manipulates human emotions through advanced technology. When her brother, a victim of the program, begins to exhibit erratic behavior due to his enhancements, Lena becomes determined to expose the truth. As she delves deeper, she encounters a group of rebe",
+      "target_preview": "Într-o societate în viitorul apropiat, unde îmbunătățirile cibernetice sunt obișnuite, o ingineră talentată pe nume Lena descoperă un program secret guvernamental care manipulează emoțiile umane prin intermediul tehnologiei avansate. Pe măsură ce se adâncește, ea întâlnește un grup de rebeli care se opun controlului guvernului asupra persoanelor augmentate.Împreună, ei elaborează un plan de infilt"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.597,
+      "source_words": 154,
+      "target_words": 92,
+      "source_preview": "In a fractured realm divided by centuries of hostility, the neighboring nations of Valenor and Drakthar teeter on the edge of mutual destruction as an ancient evil stirs beneath their contested lands. A secluded librarian, Elara, stumbles upon a cryptic manuscript predicting the resurgence of a long-dormant, world-devouring force known as the Voidspawn. As hostilities between the two nations inten",
+      "target_preview": "Într-un regat fragmentat, împărțit de secole de ostilitate, națiunile vecine Valenor și Drakthar se agită pe marginea distrugerii reciproce, deoarece un rău antic se mișcă sub pământurile lor contestate. O bibliotecară izolabilă, Elara, se întâlnește cu un manuscris criptologic care prezintă reapariția unei forțe de dorm a lumii cunoscute sub numele de Voidspawn. Ea este alăturată de Kael, un gene"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.591,
+      "source_words": 132,
+      "target_words": 78,
+      "source_preview": "A mysterious alien fleet appears in Earth's orbit, initiating a global blackout and disrupting communication systems. As military forces scramble to respond, the aliens deploy biomechanical drones that begin harvesting resources and abducting humans for unknown purposes. A small group of survivors, led by an astrophysicist, discovers that the aliens are vulnerable to a specific frequency of sound ",
+      "target_preview": "În timp ce forțele militare se luptă să răspundă, extratereștrii desfășoară drone biomecanice care încep să colecteze resurse și să răpească oameni în scopuri necunoscute. Un mic grup de supraviețuitori, condus de un astrofizician, descoperă că extratereștrii sunt vulnerabili la o anumită frecvență a sunetului emisă de ecosistemele de adâncime ale Pământului. În ultimul act, supraviețuitorii se in"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.545,
+      "source_words": 176,
+      "target_words": 96,
+      "source_preview": "The film follows the lives of six former centrics, a group of individuals who once held positions of authority in the city, but were overthrown by a new regime. After being imprisoned for years, they are unexpectedly released and find themselves trapped in the city they once ruled. As they navigate the changed landscape, they discover that the new government has imposed strict regulations, limitin",
+      "target_preview": "Filmul urmărește viața a șase foști centrici, un grup de indivizi care au ocupat odată poziții de autoritate în oraș, dar au fost răsturnati de un nou regim. Pe măsură ce se îndreaptă prin schimbarea peisajului, ei descoperă că noul guvern a impus reglementări stricte, limitând libertatea și autonomia lor. Pe măsură ce se luptă pentru a se adapta, ei încep să-și reafirme influența, formând o rețea"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.575,
+      "source_words": 167,
+      "target_words": 96,
+      "source_preview": "In a distant future, a group of adventurers sets out on an expedition to explore an uncharted territory referred to as the Abyss, believed to harbor ancient relics and unknown life forms. As they delve deeper into this enigmatic area, they face perilous environments and unforeseen obstacles, including extreme weather and aggressive fauna. Internal strife escalates among the team as hidden agendas ",
+      "target_preview": "Într-un viitor îndepărtat, un grup de aventurieri pleacă într-o expediție pentru a explora un teritoriu necunoscut numit Abis, care se crede că găzduiește relicve antice și forme de viață necunoscute. Pe măsură ce se adâncesc în această zonă enigmatică, se confruntă cu mediuri periculoase și obstacole neprevăzute, inclusiv vreme extremă și fauna agresivă. Într-o luptă pentru supraviețuire, aventur"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.593,
+      "source_words": 182,
+      "target_words": 108,
+      "source_preview": "The film revolves around a highly anticipated chess match between two grandmasters, one a reigning champion and the other a young, ambitious challenger. As the match approaches, the challenger, driven by a desire to prove himself, intensifies his training and preparation, studying his opponent's past games and strategies. The champion, meanwhile, appears confident and dismissive of his opponent's ",
+      "target_preview": "Filmul se învârte în jurul unui meci de șah foarte așteptat între doi mari maestri, unul campion în vigoare și celălalt un tânăr, ambițios adversar. Campionul, în timp ce, pare încrezător și disprețuitor de abilitățile adversarului său, dar se luptă în secret cu demoni personali și cu un declin al propriilor abilități. Pe măsură ce jocul se desfășoară, adversarul câștigă avantajul, forțând campion"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.589,
+      "source_words": 141,
+      "target_words": 83,
+      "source_preview": "After serving a lengthy prison sentence for a crime he did not commit, former high school teacher Jack Harris returns to his hometown, determined to rebuild his life and seek redemption. Struggling to find acceptance, Jack faces hostility from the community and the lingering effects of his wrongful conviction. He befriends a troubled teenager named Mia, who is grappling with her own struggles, and",
+      "target_preview": "După ce a fost condamnat la o lungă închisoare pentru o crimă pe care nu a comis-o, fostul profesor de liceu Jack Harris se întoarce în orașul său natal, hotărât să-și reconstruiască viața și să caute răscumpărare. Se împrietenește cu o adolescentă tulburată pe nume Mia, care se luptă cu propriile ei probleme, și devine un mentor pentru ea, ghidându-o prin provocările adolescenței. În momentul cul"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.526,
+      "source_words": 156,
+      "target_words": 82,
+      "source_preview": "In a remote village nestled within a dense forest, a young farmer discovers an ancient, intricately carved stone buried beneath his field. Unbeknownst to him, the stone is a relic of an ancient civilization that once wielded powerful magic. When he accidentally activates the stone, it unleashes a series of supernatural events, including the awakening of long-dormant spirits. The spirits, initially",
+      "target_preview": "Într-un sat îndepărtat, închis într-o pădure densă, un tânăr fermier descoperă o piatră antică, întruchipată în mod complex, îngropată sub câmpul său. Atunci când activă accidental piatra, ea declanșează o serie de evenimente supranaturale, inclusiv trezirea spiritelor adormiți de mult timp. Cu ajutorul unui bătrân înţelept şi al unui călător misterios, fermierul se îndreaptă spre o călătorie peri"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.469,
+      "source_words": 143,
+      "target_words": 67,
+      "source_preview": "In a distant galaxy, the inhabitants of the planet Zorath, a highly advanced and peaceful species, discover an ancient artifact buried beneath the surface of their world. The artifact, a crystalline structure emitting an unknown energy, is revealed to be a communication device from an even more ancient alien civilization. As the Zorathians decipher the messages, they learn of a cosmic alliance tha",
+      "target_preview": "Într-o galaxie îndepărtată, locuitorii planetei Zorath, o specie extrem de avansată și paşnică, descoperă un artefact antic îngropat sub suprafața lumii lor. Pe măsură ce zoratenii descifrează mesajele, se află despre o alianță cosmică care a acoperit odată universul, dedicată păstrării cunoștințelor și promovării armoniei interstelare. Prin intermediul diplomaţiei şi al împărtăşirii cunoştinţelor"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.553,
+      "source_words": 170,
+      "target_words": 94,
+      "source_preview": "In a grim futuristic society, individuals seek refuge in a virtual realm known as Nexarion. The protagonist, a gifted coder named Kaida, stumbles upon a concealed vulnerability in the system, granting them the ability to alter the virtual landscape. As Kaida explores the code, they expose a nefarious scheme by the omnipotent conglomerate, Omicron Innovations, to exploit Nexarion for mass surveilla",
+      "target_preview": "Într-o societate futuristă sombră, indivizii caută refugiu într-un regim virtual cunoscut sub numele de Nexarion. În timp ce Kaida explorează codul, ei dezvăluie un plan nefast al omnipotentului conglomerat Omicron Innovations, de a exploata Nexarion pentru supraveghere de masă și manipulare psihologică. Împreună cu alți utilizatori iluminati, inclusiv cu enigmaticul hacker Zarek, Kaida formează o"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.5,
+      "source_words": 128,
+      "target_words": 64,
+      "source_preview": "A young artist becomes increasingly fixated on showcasing her paintings online, obsessively crafting posts to gain admiration and recognition. Her fixation causes her to neglect her close relationships, choosing virtual validation over meaningful interactions with her loved ones. She begins presenting a false narrative of artistic success, using digitally altered images and staged exhibitions, whi",
+      "target_preview": "O tânără artistă devine din ce în ce mai fixată pe prezentarea tablourilor sale online, creând posturi obsesiv pentru a obține admirare și recunoaștere. Când un artist rival dezvăluie natura înșelătoare a portofoliului ei, ea se confruntă cu ridiculizarea publică și colapsul urmăritorilor ei online. În lupta cu consecințele, ea își închide conturile și încearcă să se reconecteze cu prietenii și fa"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.573,
+      "source_words": 89,
+      "target_words": 51,
+      "source_preview": "A band of ancient knights, devoted followers of an old faith, aim to revive their dormant deities by discovering an ancient relic thought to possess great spiritual power. Their quest takes them through perilous terrains, where they confront both physical and spiritual trials. Along their journey, they meet a cynical archaeologist and a sage, both of whom provide perspectives on the essence of fai",
+      "target_preview": "Un grup de cavaleri antici, adepți devotati ai unei veche credințe, își doresc să-și reînvie zeitățile adormiți descoperind o relicvă antică care se credea că posedă o putere spirituală mare. Pe parcursul călătoriei lor, ei întâlnesc un arheolog cinic și un înţelept, care oferă perspective despre esența credinței și importanța tradiției."
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.543,
+      "source_words": 138,
+      "target_words": 75,
+      "source_preview": "In a bustling urban landscape, two childhood friends, Ava and Ben, stumble upon an abandoned rooftop garden hidden above their apartment complex. Unaware of its existence, they begin to spend their afternoons there, sharing their aspirations and forming a deep connection. As years go by, the rooftop garden becomes their refuge from the city's chaos. However, as they enter adulthood, their lives ta",
+      "target_preview": "Într-un peisaj urban aglomerat, doi prieteni din copilărie, Ava și Ben, se întâlnesc cu o grădină abandonată ascunsă deasupra complexului lor de apartamente. Cu trecerea anilor, grădina de pe acoperiș devine refugiul lor de haosul orașului.Cu toate acestea, pe măsură ce intră în maturitate, viața lor ia drumuri diferite și se separă. Acolo, ea descoperă un model meticulos menținut al orizontului o"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.599,
+      "source_words": 152,
+      "target_words": 91,
+      "source_preview": "In a sprawling desert city, a reclusive inventor creates a machine that can generate infinite energy by harnessing the latent power of forgotten dreams. The invention draws the attention of a powerful energy corporation, which seeks to exploit the machine for profit. As the inventor resists their advances, the machine begins to malfunction, manifesting vivid, surreal visions that blur the line bet",
+      "target_preview": "Într-un oraș deșert, un inventator solitar creează o mașină care poate genera energie infinită prin exploatarea puterii latente a viselor uitate. Pe măsură ce inventatorul reziste progreselor lor, mașina începe să funcționeze în mod defectuos, manifestând viziuni vii și surreale care slăbesc linia dintre realitate și imaginație. Împreună, inventatorul și poetul descoperă că puterea mașinii este le"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.518,
+      "source_words": 83,
+      "target_words": 43,
+      "source_preview": "In the remote and icy mountains of northern Canada, a team of archaeologists discovers an ancient, frozen structure buried beneath a glacier. As they begin to excavate, strange and unsettling phenomena plague the team, suggesting the site's supernatural history. Led by Dr. Liam Harper, a seasoned archaeologist, the group delves deeper into the structure, unearthing relics that hint at a lost civil",
+      "target_preview": "În munții izolate și înghețate din nordul Canadei, o echipă de arheologi descoperă o structură antică, înghețată, îngropată sub un ghețar. Liam Harper, un arheolog cu experiență, grupul apune mai adânc în structură, descoperind resturi care sugerează ritualurile întunecate ale unei civilizații pierdute."
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.592,
+      "source_words": 76,
+      "target_words": 45,
+      "source_preview": "In the small town of Millbrook, a local historian, Dr. Eliza Thompson, discovers an old time capsule while renovating the town hall. Inside, she finds letters, photographs, and a diary from the year 1950. The diary reveals that the time capsule was intended to be opened in 2050, a full century later. As Dr. Thompson deciphers the contents, she uncovers details about the town's history and the pers",
+      "target_preview": "În micul oraș Millbrook, o istorică locală, Dr. Eliza Thompson, descoperă o capsulă veche de timp în timp ce renovează primăria. În timp ce dr. Thompson descifrează conținutul, ea descoperă detalii despre istoria orașului și despre viața personală a locuitorilor săi din o epocă trecută."
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.597,
+      "source_words": 186,
+      "target_words": 111,
+      "source_preview": "A visionary but unorthodox researcher, driven by a passion to transform the field of synthetic biology, clandestinely conducts unauthorized experiments in a deserted research facility on the outskirts of the coastal town of Ravenswood. As the researcher's project advances, they become increasingly fixated on the potential of their discovery, dismissing the dangers and disregarding the cautions of ",
+      "target_preview": "Un cercetător vizionar, dar neortodox, îndemnat de pasiunea de a transforma domeniul biologiei sintetice, efectuează în secret experimente neautorizate într-o instalație de cercetare abandonată, la periferia orașului Ravenswood. Pe măsură ce proiectul cercetătorului avansează, aceștia devin din ce în ce mai obsedați de potențialul descoperirii lor, respingând pericolele și ignorând avertismentele "
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.584,
+      "source_words": 137,
+      "target_words": 80,
+      "source_preview": "A reclusive marine biologist stationed on a remote coastal research outpost begins receiving anonymous log entries on the lab’s computer, detailing her own actions hours before they occur. Initially dismissing them as pranks by colleagues, she becomes unsettled when the predictions grow increasingly personal and precise. As storms cut off communication with the mainland, she discovers a hidden sub",
+      "target_preview": "O biologă marină izolabilă staționată pe un avanpost de cercetare de pe coasta îndepărtată începe să primească înregistrări anonime de log pe calculatorul laboratorului, detaliind propriile ei acțiuni cu câteva ore înainte de a se produce. Pe măsură ce furtunile întrerup comunicarea cu continentul, ea descoperă un sublevel ascuns sub laborator care conține echipamente identice și un al doilea term"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.536,
+      "source_words": 84,
+      "target_words": 45,
+      "source_preview": "In a quiet suburban neighborhood, Sarah and her husband Michael move into a newly renovated house, unaware of its troubled past. Strange occurrences begin to plague their lives, from unexplained noises to items moving on their own. Sarah, skeptical at first, starts to investigate the house's history and discovers a series of unexplained deaths and paranormal activity linked to the property. As the",
+      "target_preview": "Într-un cartier liniştit din suburbie, Sarah şi soţul ei, Michael, se mută într-o casă recent renovată, fără să ştie de trecutul său tulburător. Sarah, la început sceptică, începe să investigheze istoria casei și descoperă o serie de decese neexplicabile și activități paranormale legate de proprietate."
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.594,
+      "source_words": 133,
+      "target_words": 79,
+      "source_preview": "In a remote mountain village, a reclusive cartographer named Liora is startled when her childhood friend Elias returns, claiming to have discovered a hidden valley beyond the snow line. His arrival stirs unease among the villagers, who believe the valley is cursed and responsible for a landslide decades earlier. As whispers of buried treasure spread, tensions mount between those eager to explore a",
+      "target_preview": "Într-un sat de munte îndepărtat, o cartografă izolabilă numită Liora este șocată când prietenul ei din copilărie, Elias, se întoarce, susținând că a descoperit o vale ascunsă dincolo de linia de zăpadă. Pe măsură ce şoptele de comori îngropaţi se răspândeau, tensiunile creşterau între cei dornici să exploreze şi cei hotărâţi să sigileze trecerea pentru totdeauna. În consecință, trecerea este lăsat"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.577,
+      "source_words": 137,
+      "target_words": 79,
+      "source_preview": "A handful of individuals find themselves waking up in a secluded research facility buried beneath a remote desert, with no recollection of their arrival. The facility is stocked with sparse provisions and features an AI system that sporadically delivers enigmatic audio messages. As unease grows, they uncover a sequence of sealed chambers, each containing fragments of information about their previo",
+      "target_preview": "O mână de persoane se trezesc într-o unitate de cercetare izolată îngropată sub un deşert îndepărtat, fără să-şi amintească de sosirea lor. Pe măsură ce tulburările cresc, aceștia descoperă o secvență de camere sigilate, fiecare conținând fragmente de informații despre identitățile lor anterioare și alegerile care le-au adus acolo. Când unul dintre participanți găsește o ieșire ascunsă, grupul se "
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.596,
+      "source_words": 136,
+      "target_words": 81,
+      "source_preview": "A feared band of raiders, commanded by Captain Liora Kane, preys on merchant convoys traveling the Orion Spur Corridor. After seizing a freighter loaded with volatile ion cores, they draw the attention of Commander Jalen Rourke of the Galactic Enforcement Fleet. Pursued relentlessly, Kane’s crew slips into the perilous Riftstorm Expanse, where the ion cores begin to overload. As vital systems shut",
+      "target_preview": "După ce au capturat un cargo încărcat cu nuclee ionice volatile, ei atrag atenția comandantului Jalen Rourke al Flotei Galactice de Aplicare. Urmată neîncetat, echipajul lui Kane a intrat în periculosul Riftstorm Expanse, unde nuclele ionice încep să se supraîncărcească. Kane refuză să se întoarcă, hotărât să livreze transportul unui broker din lumea inferioară de pe stația Meridian, convins că pr"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.511,
+      "source_words": 186,
+      "target_words": 95,
+      "source_preview": "The narrative follows a gifted and isolated coder who discovers a secretive online community discussing a mysterious digital currency known as \"Nyxoria.\" As the coder digs deeper into the community, they become embroiled in a intricate network of enigmatic messages and brain teasers that suggest the existence of a concealed fortune. The protagonist's inquiry catches the attention of a ruthless ent",
+      "target_preview": "Povestea urmărește un coder talentat și izolat care descoperă o comunitate secretă online discutând despre o monedă digitală misterioasă cunoscută sub numele de \"Nyxoria\". noroc. Pe măsură ce tensiunile cresc, programatorul trebuie să navigheze printr-o lume periculoasă de agresiuni virtuale, supraveghere și trădare pentru a dezlănțui misterul din spatele Nyxoria. Pe parcursul drumului, ei formeaz"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.548,
+      "source_words": 126,
+      "target_words": 69,
+      "source_preview": "An investigator renowned for his work with paranormal cases is summoned to the small harbor city of Grayhaven to look into a string of mysterious vanishings. Eyewitnesses report sightings of a ghostly mariner who emerges from the mist during dense sea fogs. Speaking with townsfolk, the investigator learns of an old tale about a shipwrecked captain who perished at sea and vowed vengeance on those a",
+      "target_preview": "Un investigator renumit pentru munca sa cu cazuri paranormale este chemat în micul oraș portuar Grayhaven pentru a cerceta o serie de dispariții misterioase. Vorbind cu locuitorii orașului, investigatorul află o veche poveste despre un căpitan naufragiat care a murit la mare și a jurat răzbunare pe cei de pe mal. Când fantomul se confruntă cu el, el folosește un medalion protejat pentru a-i tăia l"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.577,
+      "source_words": 168,
+      "target_words": 97,
+      "source_preview": "In a high-stakes game of cat and mouse, a brilliant detective is pitted against a cunning thief who has evaded capture for years. The thief, known only by their alias, has a reputation for pulling off daring heists and leaving behind no evidence. As the detective closes in, the thief becomes increasingly brazen, leaving a trail of clues designed to taunt and mislead. The detective, however, remain",
+      "target_preview": "Într-un joc cu riscuri ridicate de felină și șoarece, un detectiv genial se confruntă cu un hoț astucător care a evadat captura de ani de zile. Pe măsură ce detectivul se apropie, hoțul devine din ce în ce mai îndrăzneț, lăsând o urmă de indicii concepute să batjocorească și să inducă în eroare. Pe măsură ce urmărirea se intensifică, cei doi se angajează într-o serie de bătălii intelectuale și fiz"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.561,
+      "source_words": 123,
+      "target_words": 69,
+      "source_preview": "In a remote hamlet, a young apprentice named Elara discovers an ancient talisman while working in her master's forge. She soon realizes the talisman allows her to converse with the woodland spirits. As a strange malady begins to afflict the villagers, Elara learns from the spirits that the remedy is hidden within a sacred enclave, protected by a formidable guardian. Undeterred, Elara sets out on a",
+      "target_preview": "Într-un sat îndepărtat, o tânără ucenică pe nume Elara descoperă un talisman antic în timp ce lucrează în forjarea stăpânului ei. Pe măsură ce o boală ciudată începe să afecteze locuitorii satului, Elara află de la spirite că remediu este ascuns în interiorul unei enclave sacre, protejată de un ghid formidabil. Înțelegând natura temporară a legăturii, Elara îl returnă în pădure, menținând armonia "
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.547,
+      "source_words": 137,
+      "target_words": 75,
+      "source_preview": "In a dystopian future, the government enforces a strict social hierarchy through a system of bonds that tether individuals to their societal roles and limit their interactions. The protagonist, a low-ranking worker named Elara, discovers an underground network of rebels who aim to dismantle the oppressive system. Elara joins the resistance and, through a series of covert operations, helps to expos",
+      "target_preview": "Într-un viitor distopian, guvernul impune o ierarhie socială strictă printr-un sistem de legături care leagă indivizii de rolurile lor sociale și limitează interacțiunile lor. Pe măsură ce mișcarea devine mai puternică, Elara se confruntă cu o alegere critică între libertatea sa nou-obținută și siguranța celor dragi, care sunt încă sub controlul guvernului. Într-o confruntare culminantă, Elara și "
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.576,
+      "source_words": 172,
+      "target_words": 99,
+      "source_preview": "The protagonist, a former government agent turned private investigator, is driven by a personal vendetta after the mysterious death of their sibling, who was investigating a high-stakes arms deal. The sibling's research hinted at a deep-seated conspiracy involving corrupt officials and corporate interests. As the protagonist delves deeper into the case, they discover that their sibling's death was",
+      "target_preview": "Protagonistul, un fost agent guvernamental care a devenit detectiv privat, este condus de o răzbunare personală după moartea misterioasă a fratelui lor, care investiga o afacere cu arme cu riscuri ridicate. Pe măsură ce protagonistul aprofundează cazul, descoperă că moartea fratelui lor a fost, probabil, orchestrată pentru a acoperi informații sensibile. Investigațiile ulterioare arată că acordul "
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.599,
+      "source_words": 152,
+      "target_words": 91,
+      "source_preview": "A top-tier agent, codenamed Nightshade, is dispatched to gain access to a cutting-edge laboratory hidden within a sprawling research complex. Driven by an intense fixation on retrieving sensitive intel regarding a revolutionary new material, Nightshade's actions become increasingly erratic as the mission wears on. As the stakes escalate, Nightshade's relationships with colleagues and superiors beg",
+      "target_preview": "Un agent de rang superior, numit în cod Nightshade, este trimis pentru a obține accesul la un laborator de ultimă oră ascuns într-un complex de cercetare extins. Pe măsură ce miza se intensifică, relațiile lui Nightshade cu colegii și superiorii încep să se înrăutățească, culminând într-o confruntare violentă care ridică alarmele între operatorii lui Nightshaade. Într-o încercare finală, disperată"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.595,
+      "source_words": 163,
+      "target_words": 97,
+      "source_preview": "A mid-level executive at a multinational conglomerate, Alexandra Patel, discovers that her company is engaging in clandestine and illegal activities, including embezzlement and money laundering. Fearing for her own life, she secretly records incriminating evidence on company property using a smartphone app. The evidence is then leaked to a prominent investigative blogger, Ethan Kim, who verifies i",
+      "target_preview": "Alexandra Patel, o executivă de nivel mediu la un conglomerat multinațional, descoperă că compania ei se implică în activități clandestine și ilegale, inclusiv rătăcire și spălare de bani. Dovezile sunt apoi divulgate unui blogger de anchetă de renume, Ethan Kim, care verifică autenticitatea lor și începe să explice greșelile conglomeratului printr-o serie de articole online aspre. Ei răsplătesc p"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.556,
+      "source_words": 162,
+      "target_words": 90,
+      "source_preview": "A lone samurai, Kaito, wanders the desolate landscape of feudal Japan in search of redemption for past transgressions. Haunted by a tragedy from his own hand, he is driven to atone for the death of a young boy who was mistakenly caught in the crossfire of a brutal clan war. As Kaito navigates the treacherous terrain, he is pursued by a ruthless bandit leader who seeks to exploit the samurai's guil",
+      "target_preview": "Un samurai singuratic, Kaito, rătăcește peisajul pustiu al Japoniei feudale în căutarea răscumpărării pentru transgresia trecută. În timp ce Kaito navighează pe terenul trădător, el este urmărit de un lider bandit nemilos care încearcă să exploateze vinovăția și vulnerabilitatea samuraiului. Pe acest fundal de violență și introspecție, Kaito începe să experimenteze clipe scurte de luciditate, cu o"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.563,
+      "source_words": 174,
+      "target_words": 98,
+      "source_preview": "A struggling artist is forced to join a prestigious art conservatory's faculty after their own talent is deemed too unrefined for further study. Among their new colleagues is a charismatic and confident painter who secretly uses stolen works to fuel their own creative genius. As tensions rise between the two, a hidden archive of priceless artworks goes missing, and the artist becomes embroiled in ",
+      "target_preview": "Un artist care se luptă este obligat să se alăture facultății unui prestigios conservator de artă după ce talentul său este considerat prea nefinit pentru a putea studia mai departe. Pe măsură ce tensiunile cresc între cei doi, un arhiv ascuns de opere de artă neprețuite dispare, iar artistul devine implicat într-un mister care înconjoară întunericul trecut al conservatorului. Pe măsură ce investi"
+    },
+    {
+      "flags": [
+        "repetition"
+      ],
+      "length_ratio": 0.937,
+      "source_words": 189,
+      "target_words": 177,
+      "source_preview": "A seasoned operative, believed to have been decommissioned from active service, is revealed to still be carrying out covert missions for a clandestine agency. The agent's handler briefs them on their last assignment: to infiltrate and gather intelligence on a heavily fortified stronghold housing a ruthless and influential warlord. To complete the mission, the operative must assume the identity of ",
+      "target_preview": "Un agent cu experiență, care se crede că a fost dezactivat din serviciul activ, este descoperit că încă desfășoară misiuni secrete pentru o agenție clandestină.Handlerul agentului îi reamintește despre ultima lor misiune: să infiltreze și să colecteze informații într-un fort fort fort fortificat care găzduiește un lord de război nemilos și influent. Când intră în complex, agentul descoperă că rolu"
+    },
+    {
+      "flags": [
+        "repetition"
+      ],
+      "length_ratio": 0.845,
+      "source_words": 174,
+      "target_words": 147,
+      "source_preview": "In a cramped, underground art studio, two struggling artists, Lena and Kael, engage in an intense competition to create the most provocative installation for a prestigious exhibition. Their rivalry is fueled by their contrasting artistic styles: Lena's abstract expressionism clashes with Kael's photorealistic approach. As tensions escalate, they begin to sabotage each other's work, leading to a se",
+      "target_preview": "Într-un studio de artă îngust, subteran, doi artiști cu dificultăți, Lena și Kael, se angajează într-o competiție intensă pentru a crea cea mai provocatoare instalație pentru o expoziție de prestigiu. Pe măsură ce tensiunile se intensifică, ei încep să saboteze munca reciprocă, ducând la o serie de jocuri de scenă și un-upmanship.Cu toate acestea, atunci când un critic critic critic de artă amenin"
+    },
+    {
+      "flags": [
+        "repetition"
+      ],
+      "length_ratio": 0.955,
+      "source_words": 178,
+      "target_words": 170,
+      "source_preview": "A diligent forensic accountant is tasked with tracking down a large-scale tax evasion scheme allegedly linked to several high-profile government officials. Initially, the trail leads to a complex web of shell companies and offshore accounts, but the accountant becomes increasingly frustrated by the lack of concrete evidence. As they dig deeper, however, they begin to uncover a peculiar pattern: ea",
+      "target_preview": "Un contabil forensic diligent este însărcinat să urmărească o schemă de evaziune fiscală la scară largă, presupusă a fi legată de mai mulți oficiali guvernamentali de rang înalt.La început, traseul duce la o rețea complexă de companii de coș și conturi offshore, dar contabilul devine din ce în ce mai frustrat de lipsa de dovezi concrete. Pe măsură ce se adâncesc, însă, încep să descopere un model "
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.56,
+      "source_words": 141,
+      "target_words": 79,
+      "source_preview": "As a veteran crime journalist, Olivia returns to her hometown of Ashwood after a decade away, seeking redemption for past mistakes that drove her out of town. She begins investigating a series of gruesome ritualistic murders, which seem linked to an upsurge in occult activity in the city's hidden corners. However, Olivia's research attracts unwanted attention from a mysterious figure known only as",
+      "target_preview": "În calitate de jurnalist veteran, Olivia se întoarce în orașul său natal Ashwood după o decadă de depărtare, căutând răscumpărare pentru greșelile trecute care au dus-o să părăsească orașul. Cu toate acestea, cercetarea lui Olivia atrage atenția nedorită de la o figură misterioasă cunoscută doar sub numele de \"Arhonul\", care pare hotărâtă să o facă să tacă. Dar, spre surprinderea ei, Arhonul se de"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.564,
+      "source_words": 133,
+      "target_words": 75,
+      "source_preview": "A young doctor, Emma Taylor, discovers that her hospital's experimental treatment for a rare disease is flawed and has been knowingly administered to patients. Horrified by this revelation, Emma decides to blow the whistle on the hospital's actions, risking her reputation and relationships within the medical community. As she gathers evidence, the hospital's administration becomes increasingly hos",
+      "target_preview": "O tânără doctoră, Emma Taylor, descoperă că tratamentul experimental al spitalului ei pentru o boală rară este defectuos și a fost administrat în mod conștient pacienților. Pe măsură ce colectează dovezi, administrația spitalului devine din ce în ce mai ostilă față de ea, încercând să o facă să tacă prin intimidare și concediere de la personal. În cele din urmă, mărturia ei duce la un scandal majo"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.575,
+      "source_words": 120,
+      "target_words": 69,
+      "source_preview": "A wealthy rancher, Jameson, returns to his hometown after years away, only to be met with hostility by the local community. Unbeknownst to him, his family's long-standing feud with a rival ranch has led to a decades-old cycle of violence and retaliation. When Jameson's estranged brother is found dead, the townspeople immediately suspect him of involvement, forcing him to confront the dark legacy o",
+      "target_preview": "Un fermier bogat, Jameson, se întoarce în orașul său după ani de depărtare, dar este întâmpinat cu ostilitate de către comunitatea locală. Când fratele lui Jameson este găsit mort, locuitorii orașului îl suspectează imediat de implicare, forțându-l să se confrunte cu moștenirea întunecată a acțiunilor familiei sale. Înfruntarea consecinţelor greşelilor din trecut ale familiei sale devine o chestiu"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.548,
+      "source_words": 124,
+      "target_words": 68,
+      "source_preview": "A seasoned operative, known as \"Nightshade\", is assigned to oversee a high-stakes extraction operation in a war-torn city. As Nightshade navigates the treacherous landscape, he begins to suspect that his agency's intelligence on the target may be compromised by an internal leak. Investigating further, Nightshade discovers that Alex, one of his team members, has been secretly meeting with a known a",
+      "target_preview": "Un agent cu experiență, cunoscut sub numele de \"Nightshade\", este însărcinat să supravegheze o operațiune de extracție cu riscuri ridicate într-un oraș devastat de război. Investigând mai departe, Nightshade descoperă că Alex, unul dintre membrii echipei sale, se întâlnește în secret cu un adversar cunoscut. În haosul care urmează, Nightshade trebuie să facă o alegere imposibilă: să risce totul pe"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.542,
+      "source_words": 107,
+      "target_words": 58,
+      "source_preview": "In a distant metropolis called Cygnus, Kaida seeks membership in the exclusive Synthia Assembly by undergoing grueling evaluations. An outcast born on the fringes of the assembly's jurisdiction, Kaida possesses extraordinary cognitive abilities that set her apart from others. Her goal is to prove herself worthy through rigorous challenges, but a faction of rogue synthetic intelligences known as \"E",
+      "target_preview": "Într-o metropolă îndepărtată numită Cygnus, Kaida caută să devină membră a exclusivității Assemblei Synthia printr-o evaluare obositoare. Scopul ei este de a se dovedi demnă prin provocări riguroase, dar o factionă de inteligențe sintetice răufăcătoare cunoscute sub numele de \"Erebus\" amenință să destabilizeze coexistența uman-sintetică. În cele din urmă, trebuie să aleagă între conformitate și de"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.58,
+      "source_words": 50,
+      "target_words": 29,
+      "source_preview": "The Blue brothers (Kane, Johnny and Frank) try to lead a free and independent life by robbing banks. They are pursued by a local sheriff Hillmann, who tries in vain to capture them. When the brothers finally get enough money, their life turns up into bright and rather dangerous adventure.",
+      "target_preview": "Fraţii Blue (Kane, Johnny şi Frank) încearcă să conducă o viaţă liberă şi independentă, jefuind bănci, fiind urmăriţi de un şerif local, Hillmann, care încearcă în zadar să-i prindă."
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.506,
+      "source_words": 89,
+      "target_words": 45,
+      "source_preview": "Dragon (Jackie Chan) is the son of a Chinese aristocrat who is always getting in trouble, and likes to skip his lessons. Dragon tries to send a love note to the girl he likes via a kite, but the kite gets away. Dragon tries to get the kite and letter back which have landed on the roof of the headquarters of a gang of thieves who are planning to steal artifacts from the towns temple. Dragon interfe",
+      "target_preview": "Dragon (Jackie Chan) este fiul unui aristocrat chinezesc care se duce mereu în necazuri și îi place să-și rateze lecțiile. Dragonul încearcă să recupereze zmeura și scrisoarea care au aterizat pe acoperișul sediului unei bande de hoți care intenționează să fure artefacte din templul orașelor."
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.514,
+      "source_words": 72,
+      "target_words": 37,
+      "source_preview": "A remake of 1954's Garden of Evil. A beautiful woman recruits five men to help save her husband trapped in their gold mine menaced by a vicious gang of bandits led by Chato. One of the five men is a member of the gang, another sells weapons to Chato. They are joined by a man professing to be a pastor. All of the party want the gold and the woman for themselves.",
+      "target_preview": "O femeie frumoasă recrutează cinci bărbați pentru a-și salva soțul prins în mina lor de aur amenințat de o bandă viciosă de bandiți condusă de Chato. Toţi cei din partid vor aurul şi femeia pentru ei înşişi."
+    },
+    {
+      "flags": [
+        "repetition"
+      ],
+      "length_ratio": 0.91,
+      "source_words": 178,
+      "target_words": 162,
+      "source_preview": "Lymon was 13 years old when the teenage group Frankie Lymon & the Teenagers erupted from radios and jukeboxes with their 1956 hit \"Why Do Fools Fall in Love?\" and appeared in the movie Rock, Rock, Rock (1956). After Mr. Rock and Roll (1957), Lymon started a solo singing career, but it all fell apart. Lymon's career was over by the time he was 18 years old, and he died of a heroin overdose seven ye",
+      "target_preview": "Lymon avea 13 ani când grupul de adolescenți Frankie Lymon & the Teenagers a izbucnit din radiouri și jukeboxe cu succesul lor din 1956 \"Why Do Fools Fall in Love?\" și a apărut în filmul Rock, Rock, Rock (1956). Carera lui Lymon s-a terminat la vârsta de 18 ani și a murit de o supradoză de heroină șapte ani mai târziu. Saltând din anii 1950 până în anii 1960, filmul urmărește ascensiunea și cădere"
+    },
+    {
+      "flags": [
+        "ellipsis_artifact"
+      ],
+      "length_ratio": 1.068,
+      "source_words": 148,
+      "target_words": 158,
+      "source_preview": "The protagonist takes a trip across the Goltva river on the Easter Eve to visit a local church and enjoy the nightly Easter festivities. On his way he is engaged in a conversation with a monk ferryman named Ieronym, a slightly eccentric 30-something man who is deeply shattered by the recent death of his best friend and mentor, monk Nikolai. The latter appears to have been a genius master of Akathi",
+      "target_preview": "Protagonistul face o excursie peste râul Goltva în Ajunul Paştelui pentru a vizita o biserică locală şi pentru a se bucura de festivităţile de Paştele nocturne. Pe drum se află într-o conversație cu un călugăr ferryman pe nume Ieronym, un om puțin excentric în vârstă de 30 de ani care este profund zdrobit de moartea recentă a celui mai bun prieten și mentor al său, călugărul Nikolai. Ultimul pare "
+    },
+    {
+      "flags": [
+        "repetition"
+      ],
+      "length_ratio": 1.069,
+      "source_words": 159,
+      "target_words": 170,
+      "source_preview": "The story focuses on a young boy named Max who, after dressing in his wolf suit, wreaks such havoc through his household that he is sent to bed without his supper. Max's bedroom undergoes a mysterious transformation into a jungle environment, and he winds up sailing to an island inhabited by monsters, simply called the Wild Things. The Wild Things try to scare Max, but to no avail. After stopping ",
+      "target_preview": "Povestea se concentrează pe un tânăr băiat pe nume Max care, după ce s-a îmbrăcat în costumul său de lup, a făcut atât de multă ruină în casa sa încât a fost trimis la culcare fără cina. Camera de dormitor a lui Max trece printr-o misteriosă transformare într-un mediu junglă, iar el ajunge să navigheze pe o insulă locuită de monștri, numită pur și simplu Wild Things. După ce a oprit și a intimidat"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.449,
+      "source_words": 78,
+      "target_words": 35,
+      "source_preview": "In medieval Persia, Kashma Baba is a military cadet by day, and a roisterer by night. The morning after a rowdy banquet, Kiki, an escaped slave, takes shelter under Kashma's roof. Word comes that the wicked Caliph is looking for her; but Kashma, by this time in love, flees with her to his father's palace. Alas, there's more to Kiki than meets the eye. Will the evil schemers succeed? The sons of th",
+      "target_preview": "În Persia medievală, Kashma Baba este un cadet militar în timpul zilei și un roisterer în timpul nopții. Se spune că califul răutăcios o caută, dar Kashma, îndrăgostit, fuge cu ea la palatul tatălui său."
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.582,
+      "source_words": 91,
+      "target_words": 53,
+      "source_preview": "Hannes, a truck driver from Germany, is a train timetable enthusiast who dreams of winning the first prize at the International Timetable Contest that is to be held in Inari, Finland. When his boss ruins his plans to travel to Inari, Hannes knocks his boss unconscious and leaves the country. While on his trip to Finland by train, his boss is found dead at his office, making Hannes the prime suspec",
+      "target_preview": "Hannes, un șofer de camion din Germania, este un entuziasmator al programelor trenurilor care visează să câștige primul premiu la concursul internațional de programare a trenurilor care se va desfășura la Inari, Finlanda. În timpul călătoriei în Finlanda cu trenul, șeful său este găsit mort în biroul său, făcând din Hannes principalul suspect."
+    },
+    {
+      "flags": [
+        "ellipsis_artifact"
+      ],
+      "length_ratio": 0.995,
+      "source_words": 190,
+      "target_words": 189,
+      "source_preview": "Set in 17th century Cornwall and London, Joan Fontaine stars in the swashbuckling adventure Frenchman's Creek. As a beautiful, learned Lady of means, Dona St. Columb (Fontaine) had it all – wealth, nobility, children ... and a loveless marriage. After years of being royally subjected to mistreatment, she retreats with her most prized possessions – her two children – to a secluded manor overlooking",
+      "target_preview": "Situată în secolul al XVII-lea în Cornwall și Londra, Joan Fontaine joacă rolul principal în aventura franțuzistă Frenchman's Creek.Ca o frumoasă, învățată doamnă a mijloacelor, Dona St. Columb (Fontaine) avea totul bogăție, nobilitate, copii ... și o căsătorie fără iubire. După ani de abuz, ea se retrage cu cele mai preţioase posesiuni cei doi copii într-un conac izolat care priveşte coasta Atlan"
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.588,
+      "source_words": 80,
+      "target_words": 47,
+      "source_preview": "In prohibition-era Manhattan, shopkeeper Mary Brown loses Aubrey, her childhood sweetheart, when he marries a rich woman. Reporter Steve \"Rollo\" Porter has also lost his childhood sweetheart, Elaine, who has married someone else. Mary and Steve become friends and make a marriage of convenience based on a shared sense of whimsical humor as well as their mutual losses. When their old loves re-enter ",
+      "target_preview": "În Manhattan, în perioada interdicției, Mary Brown, proprietara magazinului, își pierde iubita de copilărie, Aubrey, când se căsătorește cu o femeie bogată. Când vechile lor dragoste revin în viața lor, câțiva ani mai târziu, Mary și Steve trebuie să decidă ce este cu adevărat important pentru ei."
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.59,
+      "source_words": 83,
+      "target_words": 49,
+      "source_preview": "The protagonist, a likeable American cowboy (Antony) in Edo-period 19th-Century Japan, becomes trapped in the middle of the strife between two feuding aristocratic Japanese families. The cowboy possesses a priceless scroll, acquired by chance while he was in Alaska, which both warring families want. Violent fighting ensues, involving Samuri swords, a Gatling gun, and a makeshift single-shot blunde",
+      "target_preview": "Protagonistul, un cowboy american (Antony) drăguţ din Japonia din secolul al XIX-lea din perioada Edo, devine prins în mijlocul conflictului dintre două familii aristocratice japoneze în luptă. În cele din urmă, cowboy-ul returnă rolul (care merită \"un milion de dolari\") prințesei, un membru al familiei care sunt proprietarii legitimi."
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.591,
+      "source_words": 66,
+      "target_words": 39,
+      "source_preview": "An orphaned Kurdish child (Hêjar) and a Turkish pensioner (Rıfat) are thrown together by circumstance. Rıfat, a widowed retired judge, refuses to get involved in politics. He is forced out of his solitude, when Hêjar the only survivor of a police raid on his Kurdish neighbors, takes refuge at his home. Gradually, he warms up to the kid and decides to reunite her with her family.",
+      "target_preview": "Un copil kurd orfan (Hêjar) și un pensionar turc (Rıfat) sunt aruncați împreună de circumstanțe. El este forțat să iasă din singurătatea sa, când Héjar, singurul supraviețuitor al raidului poliției asupra vecinilor săi kurzi, se refugiează în casa lui."
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.525,
+      "source_words": 61,
+      "target_words": 32,
+      "source_preview": "Adrien works in an advertising agency in the day and at night he becomes the queen of a gay bar, run by his best friend, the seductive Eva. When Alexandre Agut, a major client of Adrien, wants to get to know him, he asks Eva to pose as his wife. Everything gets carried away when Alexandre falls in love with her.",
+      "target_preview": "Când Alexandre Agut, un client important al lui Adrien, vrea să-l cunoască, îl întreabă pe Eva să se prezinte ca soţia lui. Totul devine îndepărtat atunci când Alexandre se îndrăgostește de ea."
+    },
+    {
+      "flags": [
+        "too_short_or_truncated"
+      ],
+      "length_ratio": 0.588,
+      "source_words": 85,
+      "target_words": 50,
+      "source_preview": "André (Gérard Depardieu), a Frenchman who is divorced from his wife, takes his beautiful 14-year-old daughter, Véronique (Marie Gillain), on vacation to a paradise island. She is desperate to appear as a woman and not a girl. In order to impress a local boy, Benjamin (Patrick Mille), she makes up more and more fantastic stories, starting with André being her lover – a sugar Daddy. André is despera",
+      "target_preview": "André (Gérard Depardieu), un francez divorțat de soția sa, își ia frumoasa fiică de 14 ani, Véronique (Marie Gillain), în vacanță pe o insulă paradisiacă. Pentru a impresiona un băiat local, Benjamin (Patrick Mille), ea inventează tot mai multe povești fantastice, începând cu André fiind iubitul ei un sugar Daddy."
+    }
+  ]
+}

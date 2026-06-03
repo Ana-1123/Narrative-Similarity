@@ -1,0 +1,99 @@
+{
+  "model": "facebook/nllb-200-distilled-600M",
+  "source_language": "eng_Latn",
+  "target_language": "ron_Latn",
+  "batch_size": 16,
+  "max_input_tokens": 256,
+  "max_new_tokens": 320,
+  "max_chunk_words": 50,
+  "num_beams": 2,
+  "do_sample": false,
+  "no_repeat_ngram_size": 4,
+  "repetition_penalty": 1.12,
+  "length_penalty": 1.0,
+  "force_retranslate": true,
+  "cache_path": "/kaggle/working/romanian_nllb_improved/translation_cache_en_ro.json",
+  "chunk_cache_path": "/kaggle/working/romanian_nllb_improved/translation_chunk_cache_en_ro.json",
+  "quality_report_path": "/kaggle/working/romanian_nllb_improved/translation_quality_report.json",
+  "data_dir": "/kaggle/input/datasets/anisoaraana/similarity",
+  "out_dir": "/kaggle/working/romanian_nllb_improved",
+  "file_stats": {
+    "synthetic_data_for_classification.jsonl": {
+      "exists": true,
+      "rows": 1900,
+      "text_fields_seen": 5700,
+      "fields": [
+        "anchor_text",
+        "text_a",
+        "text_b"
+      ]
+    },
+    "synthetic_data_new.jsonl": {
+      "exists": true,
+      "rows": 1097,
+      "text_fields_seen": 3291,
+      "fields": [
+        "anchor_text",
+        "text_a",
+        "text_b"
+      ]
+    },
+    "synthetic_data_new_dev_like.jsonl": {
+      "exists": true,
+      "rows": 368,
+      "text_fields_seen": 1104,
+      "fields": [
+        "anchor_text",
+        "text_a",
+        "text_b"
+      ]
+    },
+    "dev_track_a.jsonl": {
+      "exists": true,
+      "rows": 200,
+      "text_fields_seen": 600,
+      "fields": [
+        "anchor_text",
+        "text_a",
+        "text_b"
+      ]
+    },
+    "test_track_a.jsonl": {
+      "exists": true,
+      "rows": 400,
+      "text_fields_seen": 1200,
+      "fields": [
+        "anchor_text",
+        "text_a",
+        "text_b"
+      ]
+    },
+    "test_track_b.jsonl": {
+      "exists": true,
+      "rows": 849,
+      "text_fields_seen": 849,
+      "fields": [
+        "text"
+      ]
+    }
+  },
+  "outputs": {
+    "synthetic_data_for_classification.jsonl": "/kaggle/working/romanian_nllb_improved/synthetic_data_for_classification_ro.jsonl",
+    "synthetic_data_new.jsonl": "/kaggle/working/romanian_nllb_improved/synthetic_data_new_ro.jsonl",
+    "synthetic_data_new_dev_like.jsonl": "/kaggle/working/romanian_nllb_improved/synthetic_data_new_dev_like_ro.jsonl",
+    "dev_track_a.jsonl": "/kaggle/working/romanian_nllb_improved/dev_track_a_ro.jsonl",
+    "test_track_a.jsonl": "/kaggle/working/romanian_nllb_improved/test_track_a_ro.jsonl",
+    "test_track_b.jsonl": "/kaggle/working/romanian_nllb_improved/test_track_b_ro.jsonl"
+  },
+  "unique_texts": 11775,
+  "cached_translations": 11775,
+  "quality_summary": {
+    "flagged_count": 58,
+    "flagged_rate": 0.004925690021231423,
+    "flag_counts": {
+      "too_short_or_truncated": 51,
+      "repetition": 5,
+      "ellipsis_artifact": 2
+    }
+  }
+}
