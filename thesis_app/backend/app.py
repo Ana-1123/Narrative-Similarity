@@ -1365,149 +1365,6 @@ elif page == "Translation Explorer":
     st.markdown("<div class='thesis-eyebrow'>Chapter 3 · Section 3.2 · English-Romanian Dataset</div>", unsafe_allow_html=True)
     st.markdown("## Translation Explorer")
     st.markdown("Browse development-set stories in English and their Romanian translations. Compare how stories are translated while maintaining narrative meaning.")
-    # ── Flagged Translations ──
-    st.markdown("---")
-    st.markdown("### Flagged Translations · Translation Quality Report")
-    st.markdown("""
-    Every NLLB-200 translation was automatically screened for three failure modes: very short/truncated
-    output (target/source word-ratio &lt; 0.6), repeated n-gram patterns, and ellipsis artifacts left over
-    from chunked generation. The table below lists every flagged case from the **11,775**-entry translation
-    cache, alongside the source/target previews for inspection.
-    """, unsafe_allow_html=True)
-
-    try:
-        quality_path = resolve_data_path("narrative_nlp/dataset/romanian_narrative_similarity_dataset/translation_quality_report.json", "translation_quality_report.json")
-        with open(quality_path, "r", encoding="utf-8") as f:
-            quality_report = json.load(f)
-    except Exception as e:
-        st.warning(f"Could not load translation quality report: {e}")
-        quality_report = {}
-
-    if quality_report:
-        total = quality_report.get("total_translations", 0)
-        flagged_count = quality_report.get("flagged_count", 0)
-        flagged_rate = quality_report.get("flagged_rate", 0) * 100
-        flag_counts = quality_report.get("flag_counts", {})
-        length_ratio = quality_report.get("length_ratio", {})
-        flagged_examples = quality_report.get("flagged_examples", [])
-
-        fc1, fc2, fc3, fc4 = st.columns(4)
-        fc1.markdown(f"""<div class="metric-box">
-        <div class="metric-val">{total:,}</div>
-        <div class="metric-label">Total translations</div>
-        </div>""", unsafe_allow_html=True)
-        fc2.markdown(f"""<div class="metric-box">
-        <div class="metric-val metric-val-accent">{flagged_count}</div>
-        <div class="metric-label">Flagged cases</div>
-        </div>""", unsafe_allow_html=True)
-        fc3.markdown(f"""<div class="metric-box">
-        <div class="metric-val">{flagged_rate:.2f}%</div>
-        <div class="metric-label">Flagged rate</div>
-        </div>""", unsafe_allow_html=True)
-        fc4.markdown(f"""<div class="metric-box">
-        <div class="metric-val">{length_ratio.get('median', 0):.3f}</div>
-        <div class="metric-label">Median RO/EN<br>word ratio (all)</div>
-        </div>""", unsafe_allow_html=True)
-
-        st.markdown("<br>", unsafe_allow_html=True)
-
-        fcol1, fcol2 = st.columns(2)
-        with fcol1:
-            flag_df = pd.DataFrame({
-                "Flag type": ["Too short / truncated", "Repetition", "Ellipsis artifact"],
-                "Count": [
-                    flag_counts.get("too_short_or_truncated", 0),
-                    flag_counts.get("repetition", 0),
-                    flag_counts.get("ellipsis_artifact", 0),
-                ],
-            })
-            fig_flags = px.bar(flag_df, x="Flag type", y="Count", text="Count",
-                            title="Flagged cases by type",
-                            color="Flag type",
-                            color_discrete_map={
-                                "Too short / truncated": "#c23b2a",
-                                "Repetition": "#b8913a",
-                                "Ellipsis artifact": "#6b4a7a",
-                            })
-            fig_flags.update_traces(textposition="outside")
-            fig_flags.update_layout(showlegend=False)
-            navy_fig(fig_flags, height=320)
-            st.plotly_chart(fig_flags, use_container_width=True)
-
-        with fcol2:
-            ratios = [ex.get("length_ratio", 0) for ex in flagged_examples]
-            if ratios:
-                ratio_df = pd.DataFrame({"Length ratio (target/source words)": ratios})
-                fig_ratio = px.histogram(ratio_df, x="Length ratio (target/source words)", nbins=20,
-                                        title="Length-ratio distribution among flagged cases",
-                                        color_discrete_sequence=["#2a5f72"])
-                fig_ratio.add_vline(x=0.6, line_dash="dash", line_color="#c23b2a",
-                                    annotation_text="too-short threshold (0.6)")
-                navy_fig(fig_ratio, height=320)
-                st.plotly_chart(fig_ratio, use_container_width=True)
-
-        st.markdown(f"""<div class='baseline-note'>
-        Across the full 11,775-entry cache, the length-ratio (target words ÷ source words) ranges from
-        {length_ratio.get('min', 0):.3f} to {length_ratio.get('max', 0):.3f}, with a median of
-        {length_ratio.get('median', 0):.3f} — translations are slightly more compact than their English
-        source on average, consistent with Romanian's tendency toward shorter renderings of the same content.
-        The {flagged_count} flagged cases ({flagged_rate:.2f}%) sit well outside this typical range.
-        </div>""", unsafe_allow_html=True)
-
-        st.markdown("---")
-        st.markdown("#### Flagged Cases - Source / Target Comparison")
-
-        flag_type_options = ["All", "Too short / truncated", "Repetition", "Ellipsis artifact"]
-        flag_key_map = {
-            "Too short / truncated": "too_short_or_truncated",
-            "Repetition": "repetition",
-            "Ellipsis artifact": "ellipsis_artifact",
-        }
-
-        sel_col1, sel_col2 = st.columns([1, 1])
-        with sel_col1:
-            selected_flag = st.selectbox("Filter by flag type", flag_type_options, key="flag_filter")
-        with sel_col2:
-            sort_order = st.selectbox("Sort by length ratio", ["Lowest first", "Highest first"], key="flag_sort")
-
-        filtered_examples = flagged_examples
-        if selected_flag != "All":
-            key = flag_key_map[selected_flag]
-            filtered_examples = [ex for ex in flagged_examples if key in ex.get("flags", [])]
-
-        filtered_examples = sorted(
-            filtered_examples,
-            key=lambda ex: ex.get("length_ratio", 0),
-            reverse=(sort_order == "Highest first"),
-        )
-
-        st.markdown(f"<div class='section-label'>{len(filtered_examples)} flagged case(s) match</div>", unsafe_allow_html=True)
-
-        for i, ex in enumerate(filtered_examples, 1):
-            flags = ex.get("flags", [])
-            ratio = ex.get("length_ratio", 0)
-            src_words = ex.get("source_words", 0)
-            tgt_words = ex.get("target_words", 0)
-
-            badge_map = {
-                "too_short_or_truncated": "<span class='pill pill-miss'>Too short / truncated</span>",
-                "repetition": "<span class='pill pill-gold'>Repetition</span>",
-                "ellipsis_artifact": "<span class='pill pill-thm'>Ellipsis artifact</span>",
-            }
-            badges = " ".join(badge_map.get(f, f"<span class='pill'>{f}</span>") for f in flags)
-
-            header = f"#{i:02d} - ratio {ratio:.3f} ({src_words} EN → {tgt_words} RO words)"
-            with st.expander(header, expanded=False):
-                st.markdown(badges, unsafe_allow_html=True)
-                cmp_col1, cmp_col2 = st.columns(2, gap="large")
-                with cmp_col1:
-                    st.markdown("<div style='font-weight:600; color:#0f1e35; margin-bottom:0.5rem;'>EN Source (preview)</div>", unsafe_allow_html=True)
-                    st.markdown(f"<div class='story-block'>{ex.get('source_preview','')}</div>", unsafe_allow_html=True)
-                with cmp_col2:
-                    st.markdown("<div style='font-weight:600; color:#0f1e35; margin-bottom:0.5rem;'>🇷🇴 RO Target (preview)</div>", unsafe_allow_html=True)
-                    st.markdown(f"<div class='story-block'>{ex.get('target_preview','')}</div>", unsafe_allow_html=True)
-    else:
-        st.info("Translation quality report not found - load `translation_quality_report.json` to see flagged cases.")
     # ── Load English data ──
     dev = load_dev_triples()
 
@@ -1597,6 +1454,203 @@ elif page == "Translation Explorer":
                     st.markdown(f"<div class='story-block'>{s['text_ro']}</div>", unsafe_allow_html=True)
                 else:
                     st.markdown("<div class='baseline-note'><em>Translation not available</em></div>", unsafe_allow_html=True)
+
+    # ── Flagged Translations ──
+    st.markdown("---")
+    st.markdown("### Flagged Translations · Translation Quality Report")
+    st.markdown("""
+    Every NLLB-200 translation was automatically screened for three failure modes: very short/truncated
+    output (target/source word-ratio &lt; 0.6), repeated n-gram patterns, and ellipsis artifacts left over
+    from chunked generation. The table below lists every flagged case from the **11,775**-entry translation
+    cache, alongside the full source/target texts for inspection.
+    """, unsafe_allow_html=True)
+
+    try:
+        quality_path = resolve_data_path("narrative_nlp/dataset/romanian_narrative_similarity_dataset/translation_quality_report.json", "translation_quality_report.json")
+        with open(quality_path, "r", encoding="utf-8") as f:
+            quality_report = json.load(f)
+    except Exception as e:
+        st.warning(f"Could not load translation quality report: {e}")
+        quality_report = {}
+
+    # ── Load full translation cache + English source texts for full-text lookup ──
+    try:
+        trans_cache_path = resolve_data_path("narrative_nlp/dataset/romanian_narrative_similarity_dataset/translation_cache_en_ro.json", "translation_cache_en_ro.json")
+        with open(trans_cache_path, "r", encoding="utf-8") as f:
+            full_trans_cache = json.load(f)
+    except Exception:
+        full_trans_cache = {}
+
+    @st.cache_data
+    def build_flagged_lookup(_cache: dict):
+        """Map normalised preview-prefix -> (full_en, full_ro) for fast matching."""
+        lookup = []
+        for en_text, ro_text in _cache.items():
+            lookup.append((norm_text(en_text), en_text, ro_text))
+        return lookup
+
+    flagged_lookup = build_flagged_lookup(full_trans_cache) if full_trans_cache else []
+
+    def find_full_translation(source_preview: str, target_preview: str):
+        """Find the full EN/RO pair whose EN text starts with source_preview.
+        Falls back to matching on target_preview prefix if EN match fails.
+        Returns (full_en, full_ro) or (None, None) if not found."""
+        if not flagged_lookup:
+            return None, None
+        norm_src = norm_text(source_preview)
+        # Strip a trailing partial word (preview is often cut mid-word)
+        norm_src_trimmed = norm_src.rsplit(" ", 1)[0] if " " in norm_src else norm_src
+
+        for norm_en, full_en, full_ro in flagged_lookup:
+            if norm_en.startswith(norm_src_trimmed):
+                return full_en, full_ro
+
+        # Fallback: match on the Romanian target preview prefix
+        norm_tgt = norm_text(target_preview)
+        norm_tgt_trimmed = norm_tgt.rsplit(" ", 1)[0] if " " in norm_tgt else norm_tgt
+        for norm_en, full_en, full_ro in flagged_lookup:
+            if norm_text(full_ro).startswith(norm_tgt_trimmed):
+                return full_en, full_ro
+
+        return None, None
+
+    if quality_report:
+        total = quality_report.get("total_translations", 0)
+        flagged_count = quality_report.get("flagged_count", 0)
+        flagged_rate = quality_report.get("flagged_rate", 0) * 100
+        flag_counts = quality_report.get("flag_counts", {})
+        length_ratio = quality_report.get("length_ratio", {})
+        flagged_examples = quality_report.get("flagged_examples", [])
+
+        fc1, fc2, fc3, fc4 = st.columns(4)
+        fc1.markdown(f"""<div class="metric-box">
+        <div class="metric-val">{total:,}</div>
+        <div class="metric-label">Total translations</div>
+        </div>""", unsafe_allow_html=True)
+        fc2.markdown(f"""<div class="metric-box">
+        <div class="metric-val metric-val-accent">{flagged_count}</div>
+        <div class="metric-label">Flagged cases</div>
+        </div>""", unsafe_allow_html=True)
+        fc3.markdown(f"""<div class="metric-box">
+        <div class="metric-val">{flagged_rate:.2f}%</div>
+        <div class="metric-label">Flagged rate</div>
+        </div>""", unsafe_allow_html=True)
+        fc4.markdown(f"""<div class="metric-box">
+        <div class="metric-val">{length_ratio.get('median', 0):.3f}</div>
+        <div class="metric-label">Median RO/EN<br>word ratio (all)</div>
+        </div>""", unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        fcol1, fcol2 = st.columns(2)
+        with fcol1:
+            flag_df = pd.DataFrame({
+                "Flag type": ["Too short / truncated", "Repetition", "Ellipsis artifact"],
+                "Count": [
+                    flag_counts.get("too_short_or_truncated", 0),
+                    flag_counts.get("repetition", 0),
+                    flag_counts.get("ellipsis_artifact", 0),
+                ],
+            })
+            fig_flags = px.bar(flag_df, x="Flag type", y="Count", text="Count",
+                            title="Flagged cases by type",
+                            color="Flag type",
+                            color_discrete_map={
+                                "Too short / truncated": "#c23b2a",
+                                "Repetition": "#b8913a",
+                                "Ellipsis artifact": "#6b4a7a",
+                            })
+            fig_flags.update_traces(textposition="outside")
+            fig_flags.update_layout(showlegend=False)
+            navy_fig(fig_flags, height=320)
+            st.plotly_chart(fig_flags, use_container_width=True)
+
+        with fcol2:
+            ratios = [ex.get("length_ratio", 0) for ex in flagged_examples]
+            if ratios:
+                ratio_df = pd.DataFrame({"Length ratio (target/source words)": ratios})
+                fig_ratio = px.histogram(ratio_df, x="Length ratio (target/source words)", nbins=20,
+                                        title="Length-ratio distribution among flagged cases",
+                                        color_discrete_sequence=["#2a5f72"])
+                fig_ratio.add_vline(x=0.6, line_dash="dash", line_color="#c23b2a",
+                                    annotation_text="too-short threshold (0.6)")
+                navy_fig(fig_ratio, height=320)
+                st.plotly_chart(fig_ratio, use_container_width=True)
+
+        st.markdown(f"""<div class='baseline-note'>
+        Across the full 11,775-entry cache, the length-ratio (target words ÷ source words) ranges from
+        {length_ratio.get('min', 0):.3f} to {length_ratio.get('max', 0):.3f}, with a median of
+        {length_ratio.get('median', 0):.3f} — translations are slightly more compact than their English
+        source on average, consistent with Romanian's tendency toward shorter renderings of the same content.
+        The {flagged_count} flagged cases ({flagged_rate:.2f}%) sit well outside this typical range.
+        </div>""", unsafe_allow_html=True)
+
+        if not full_trans_cache:
+            st.markdown("<div class='baseline-note'>Note: translation cache not found - showing truncated previews from the quality report only.</div>", unsafe_allow_html=True)
+
+        st.markdown("---")
+        st.markdown("#### Flagged Cases - Source / Target Comparison")
+
+        flag_type_options = ["All", "Too short / truncated", "Repetition", "Ellipsis artifact"]
+        flag_key_map = {
+            "Too short / truncated": "too_short_or_truncated",
+            "Repetition": "repetition",
+            "Ellipsis artifact": "ellipsis_artifact",
+        }
+
+        sel_col1, sel_col2 = st.columns([1, 1])
+        with sel_col1:
+            selected_flag = st.selectbox("Filter by flag type", flag_type_options, key="flag_filter")
+        with sel_col2:
+            sort_order = st.selectbox("Sort by length ratio", ["Lowest first", "Highest first"], key="flag_sort")
+
+        filtered_examples = flagged_examples
+        if selected_flag != "All":
+            key = flag_key_map[selected_flag]
+            filtered_examples = [ex for ex in flagged_examples if key in ex.get("flags", [])]
+
+        filtered_examples = sorted(
+            filtered_examples,
+            key=lambda ex: ex.get("length_ratio", 0),
+            reverse=(sort_order == "Highest first"),
+        )
+
+        st.markdown(f"<div class='section-label'>{len(filtered_examples)} flagged case(s) match</div>", unsafe_allow_html=True)
+
+        for i, ex in enumerate(filtered_examples, 1):
+            flags = ex.get("flags", [])
+            ratio = ex.get("length_ratio", 0)
+            src_words = ex.get("source_words", 0)
+            tgt_words = ex.get("target_words", 0)
+            src_preview = ex.get("source_preview", "")
+            tgt_preview = ex.get("target_preview", "")
+
+            full_en, full_ro = find_full_translation(src_preview, tgt_preview)
+            display_en = full_en if full_en else src_preview
+            display_ro = full_ro if full_ro else tgt_preview
+            is_truncated_display = full_en is None
+
+            badge_map = {
+                "too_short_or_truncated": "<span class='pill pill-miss'>Too short / truncated</span>",
+                "repetition": "<span class='pill pill-gold'>Repetition</span>",
+                "ellipsis_artifact": "<span class='pill pill-thm'>Ellipsis artifact</span>",
+            }
+            badges = " ".join(badge_map.get(f, f"<span class='pill'>{f}</span>") for f in flags)
+
+            header = f"#{i:02d} - ratio {ratio:.3f} ({src_words} EN → {tgt_words} RO words)"
+            with st.expander(header, expanded=False):
+                st.markdown(badges, unsafe_allow_html=True)
+                if is_truncated_display:
+                    st.markdown("<div class='baseline-note'>Full text not found in translation cache - showing preview only.</div>", unsafe_allow_html=True)
+                cmp_col1, cmp_col2 = st.columns(2, gap="large")
+                with cmp_col1:
+                    st.markdown("<div style='font-weight:600; color:#0f1e35; margin-bottom:0.5rem;'>EN Source</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='story-block'>{display_en}</div>", unsafe_allow_html=True)
+                with cmp_col2:
+                    st.markdown("<div style='font-weight:600; color:#0f1e35; margin-bottom:0.5rem;'>RO Target</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='story-block'>{display_ro}</div>", unsafe_allow_html=True)
+    else:
+        st.info("Translation quality report not found - load `translation_quality_report.json` to see flagged cases.")
 
 # ======================== PAGE: Live Aspect Extraction ========================
 elif page == "Live Aspect Extraction":
