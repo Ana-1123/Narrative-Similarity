@@ -554,7 +554,7 @@ with st.sidebar:
             "📈 Aspect Informativeness",
             "📊 Experimental Results",
             "🌍 Multilingual Comparison",
-            "🔍 Story & Aspect Explorer",
+            "🌐 Translation Explorer",
             "⚡ Live Aspect Extraction",
         ],
         label_visibility="collapsed",
@@ -1360,53 +1360,73 @@ Median RO/EN word ratio: <strong>0.947</strong> - translations are slightly shor
 """, unsafe_allow_html=True)
 
 # ======================== PAGE: Story & Aspect Explorer ========================
-elif page == "Story & Aspect Explorer":
-    st.markdown("<div class='thesis-eyebrow'>Chapter 3 · Section 3.6 · Interactive Exploration</div>", unsafe_allow_html=True)
-    st.markdown("## Story & Aspect Explorer")
-    st.markdown("Browse development-set stories with their extracted narrative aspects (Version 3 - compact phrases). This supports qualitative error analysis and helps understand what the similarity model sees.")
+elif page == "Translation Explorer":
+    st.markdown("<div class='thesis-eyebrow'>Chapter 3 · Section 3.2 · English-Romanian Dataset</div>", unsafe_allow_html=True)
+    st.markdown("## Translation Explorer")
+    st.markdown("Browse development-set stories in English and their Romanian translations. Compare how stories are translated while maintaining narrative meaning.")
 
-    aspects = load_aspects_cache(3)
+    # ── Load English data ──
     dev = load_dev_triples()
 
-    if not aspects:
-        st.warning("Aspect cache V3 not found. Showing stories without aspects.")
+    # ── Load Romanian data and translation cache ──
+    try:
+        ro_path = resolve_data_path("narrative_nlp/dataset/romanian_narrative_similarity_dataset/dev_track_a_ro.jsonl", "dev_track_a_ro.jsonl")
+        with open(ro_path, "r", encoding="utf-8") as f:
+            dev_ro = [json.loads(line.strip()) for line in f if line.strip()]
+        
+        trans_cache_path = resolve_data_path("narrative_nlp/dataset/romanian_narrative_similarity_dataset/translation_cache_en_ro.json", "translation_cache_en_ro.json")
+        with open(trans_cache_path, "r", encoding="utf-8") as f:
+            trans_cache = json.load(f)
+    except Exception as e:
+        st.warning(f"Could not load Romanian data: {e}")
+        dev_ro = []
+        trans_cache = {}
 
+    # ── Build story pairs (EN + RO) ──
     stories = {}
-    for t in dev:
+    for i, t_en in enumerate(dev):
         for field in ["anchor_text","text_a","text_b"]:
-            text = t.get(field,"")
-            if text and text not in stories:
-                title = t.get(f"{field}_title","")
-                norm = norm_text(text)
-                entry = aspects.get(norm, {})
-                stories[text] = {
-                    "title": title or "",
-                    "text": text,
-                    "coa": entry.get("coa",""),
-                    "outcomes": entry.get("outcomes",""),
-                    "theme": entry.get("theme",""),
-                    "has_asp": bool(entry.get("coa") or entry.get("theme")),
-                    "words": word_count(text),
-                }
+            text_en = t_en.get(field, "").strip()
+            if not text_en or text_en in stories:
+                continue
+            
+            # Look up Romanian translation
+            text_ro = trans_cache.get(text_en, "")
+            
+            # If not in cache, try to match by index/field from dev_ro
+            if not text_ro and i < len(dev_ro):
+                t_ro = dev_ro[i]
+                text_ro = t_ro.get(field, "").strip()
+            
+            title = t_en.get(f"{field}_title", "")
+            
+            stories[text_en] = {
+                "title": title or "",
+                "text_en": text_en,
+                "text_ro": text_ro,
+                "words_en": word_count(text_en),
+                "words_ro": word_count(text_ro) if text_ro else 0,
+                "has_translation": bool(text_ro),
+            }
 
     story_list = list(stories.values())
 
-    # Sidebar-style filters inline
-    fc1, fc2, fc3 = st.columns([2, 1, 1])
+    # ── Filters ──
+    fc1, fc2, fc3 = st.columns([2.5, 1, 1])
     with fc1:
-        search = st.text_input("Search by title or story text", placeholder="keyword…")
+        search = st.text_input("Search by title or English text", placeholder="keyword…")
     with fc2:
-        filter_asp = st.selectbox("Aspect coverage", ["All", "Has aspects", "Missing aspects"])
+        filter_trans = st.selectbox("Translation", ["All", "With translation", "Missing translation"])
     with fc3:
-        per_page = st.selectbox("Per page", [10, 20, 50], index=0)
+        per_page = st.selectbox("Per page", [5, 10, 20], index=1)
 
     filtered = story_list
     if search:
-        filtered = [s for s in filtered if search.lower() in s["title"].lower() or search.lower() in s["text"].lower()]
-    if filter_asp == "Has aspects":
-        filtered = [s for s in filtered if s["has_asp"]]
-    elif filter_asp == "Missing aspects":
-        filtered = [s for s in filtered if not s["has_asp"]]
+        filtered = [s for s in filtered if search.lower() in s["title"].lower() or search.lower() in s["text_en"].lower()]
+    if filter_trans == "With translation":
+        filtered = [s for s in filtered if s["has_translation"]]
+    elif filter_trans == "Missing translation":
+        filtered = [s for s in filtered if not s["has_translation"]]
 
     st.markdown(f"<div class='section-label'>{len(filtered)} stories match</div>", unsafe_allow_html=True)
 
@@ -1416,21 +1436,24 @@ elif page == "Story & Aspect Explorer":
 
     for s in page_stories:
         title_part = f"**{s['title']}** - " if s['title'] else ""
-        asp_badge = "<span class='pill pill-match'>aspects ✓</span>" if s["has_asp"] else "<span class='pill pill-miss'>no aspects</span>"
-        with st.expander(f"{s['text'][:90]}…  ({s['words']} words)", expanded=False):
-            st.markdown(f"{title_part}{asp_badge}", unsafe_allow_html=True)
-            st.markdown(f"<div class='story-block'>{s['text']}</div>", unsafe_allow_html=True)
-            if s["has_asp"]:
-                sc1, sc2, sc3 = st.columns(3)
-                with sc1:
-                    st.markdown("<span class='pill pill-coa'>Course of Action</span>", unsafe_allow_html=True)
-                    st.markdown(f"<div class='card card-accent-coa'><small>{s['coa'] or '-'}</small></div>", unsafe_allow_html=True)
-                with sc2:
-                    st.markdown("<span class='pill pill-out'>Outcomes</span>", unsafe_allow_html=True)
-                    st.markdown(f"<div class='card card-accent-out'><small>{s['outcomes'] or '-'}</small></div>", unsafe_allow_html=True)
-                with sc3:
-                    st.markdown("<span class='pill pill-thm'>Theme</span>", unsafe_allow_html=True)
-                    st.markdown(f"<div class='card card-accent-thm'><small>{s['theme'] or '-'}</small></div>", unsafe_allow_html=True)
+        trans_badge = "<span class='pill' style='background:#3d6b58; color:#faf7f2;'>RO ✓</span>" if s["has_translation"] else "<span class='pill' style='background:#c23b2a; color:#faf7f2;'>RO ✗</span>"
+        
+        with st.expander(f"{s['text_en'][:85]}…  ({s['words_en']} EN | {s['words_ro']} RO words)", expanded=False):
+            st.markdown(f"{title_part}{trans_badge}", unsafe_allow_html=True)
+            
+            # ── Side-by-side comparison ──
+            col_en, col_ro = st.columns(2, gap="large")
+            
+            with col_en:
+                st.markdown("<div style='font-weight:600; color:#0f1e35; margin-bottom:0.5rem;'>EN English</div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='story-block'>{s['text_en']}</div>", unsafe_allow_html=True)
+            
+            with col_ro:
+                st.markdown("<div style='font-weight:600; color:#0f1e35; margin-bottom:0.5rem;'>🇷🇴 Română</div>", unsafe_allow_html=True)
+                if s["has_translation"]:
+                    st.markdown(f"<div class='story-block'>{s['text_ro']}</div>", unsafe_allow_html=True)
+                else:
+                    st.markdown("<div class='baseline-note'><em>Translation not available</em></div>", unsafe_allow_html=True)
 
 # ======================== PAGE: Live Aspect Extraction ========================
 elif page == "Live Aspect Extraction":
