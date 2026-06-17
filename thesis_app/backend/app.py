@@ -347,6 +347,10 @@ DATA_PATHS = {
     "synth":      resolve_data_path("narrative_nlp/dataset/synthetic_data_for_classification.jsonl", "synthetic_data_for_classification.jsonl"),
     "synth_new":  resolve_data_path("narrative_nlp/dataset/synthetic_data_new.jsonl", "synthetic_data_new.jsonl"),
     "trans_quality": resolve_data_path("narrative_nlp/dataset/romanian_narrative_similarity_dataset/translation_quality_report.json", "translation_quality_report.json"),
+    "pred_track_a": resolve_data_path("narrative_nlp/G2_condition_predictions/Condition_G2_512_full_train_track_a.jsonl",
+                                   "Condition_G2_512_full_train_track_a.jsonl"),
+    "test_a_labels": resolve_data_path("narrative_nlp/dataset/test_track_a_labels.jsonl",
+                                    "test_track_a_labels.jsonl"),
 }
 
 def norm_text(text: str) -> str:
@@ -556,6 +560,7 @@ with st.sidebar:
             "📊 Experimental Results",
             "🌍 Multilingual Comparison",
             "🌐 Translation Explorer",
+            "🔍 Prediction Browser",
             "⚡ Live Aspect Extraction",
         ],
         label_visibility="collapsed",
@@ -1652,6 +1657,325 @@ elif page == "Translation Explorer":
     else:
         st.info("Translation quality report not found - load `translation_quality_report.json` to see flagged cases.")
 
+# ======================== PAGE: Prediction Browser ========================
+elif page == "Prediction Browser":
+    st.markdown("<div class='thesis-eyebrow'>Chapter 5 · Section 5.4 · G2 Condition</div>", unsafe_allow_html=True)
+    st.markdown("## Prediction Browser · G2 Test-Set Results")
+    st.markdown(
+        "Browse the Track A test triplets side by side with the G2 model's predictions. "
+        "Each row shows the anchor, both candidates, the gold label, and whether G2 was correct. "
+        "Version 3 aspect extractions are shown for quick interpretability inspection."
+    )
+
+    # ── File paths ──
+    PRED_A_PATH  = DATA_PATHS.get("pred_track_a",
+        resolve_data_path("narrative_nlp/G2_condition_predictions/Condition_G2_512_full_train_track_a.jsonl",
+                          "Condition_G2_512_full_train_track_a.jsonl"))
+    GOLD_A_PATH  = DATA_PATHS.get("test_a_labels",
+        resolve_data_path("narrative_nlp/dataset/test_track_a_labels.jsonl",
+                          "test_track_a_labels.jsonl"))
+    TEST_A_PATH  = DATA_PATHS["test_a"]
+    ASP_V3_PATH  = DATA_PATHS.get("aspects_v3")
+
+    # ── Loaders ──
+    @st.cache_data
+    def load_pred_browser_data():
+        """Load test triples, gold labels, G2 predictions, and V3 aspect cache.
+        Returns (rows, aspects_v3) where rows is a list of dicts with all fields merged."""
+        # Test triples
+        if not TEST_A_PATH or not Path(TEST_A_PATH).exists():
+            return [], {}
+        with open(TEST_A_PATH, encoding="utf-8") as f:
+            test_rows = [json.loads(l) for l in f if l.strip()]
+
+        # Gold labels (keyed by anchor+text_a+text_b triple)
+        gold_map = {}
+        if Path(GOLD_A_PATH).exists():
+            with open(GOLD_A_PATH, encoding="utf-8") as f:
+                for l in f:
+                    if not l.strip(): continue
+                    obj = json.loads(l)
+                    key = (norm_text(obj.get("anchor_text","")),
+                           norm_text(obj.get("text_a","")),
+                           norm_text(obj.get("text_b","")))
+                    gold_map[key] = bool(obj.get("text_a_is_closer"))
+
+        # G2 predictions (keyed the same way)
+        pred_map = {}
+        if Path(PRED_A_PATH).exists():
+            with open(PRED_A_PATH, encoding="utf-8") as f:
+                for l in f:
+                    if not l.strip(): continue
+                    obj = json.loads(l)
+                    key = (norm_text(obj.get("anchor_text","")),
+                           norm_text(obj.get("text_a","")),
+                           norm_text(obj.get("text_b","")))
+                    pred_map[key] = bool(obj.get("text_a_is_closer"))
+
+        # V3 aspect cache
+        asp_v3 = {}
+        if ASP_V3_PATH and Path(ASP_V3_PATH).exists():
+            with open(ASP_V3_PATH, encoding="utf-8") as f:
+                raw = json.load(f)
+            asp_v3 = {norm_text(k): v for k, v in raw.items()}
+
+        # Merge
+        rows = []
+        for obj in test_rows:
+            an = obj.get("anchor_text","").strip()
+            ta = obj.get("text_a","").strip()
+            tb = obj.get("text_b","").strip()
+            if not an: continue
+            key = (norm_text(an), norm_text(ta), norm_text(tb))
+            gold = gold_map.get(key)
+            pred = pred_map.get(key)
+            correct = (gold == pred) if (gold is not None and pred is not None) else None
+            rows.append({
+                "anchor": an,
+                "text_a": ta,
+                "text_b": tb,
+                "gold_a_closer": gold,
+                "pred_a_closer": pred,
+                "correct": correct,
+            })
+        return rows, asp_v3
+
+    all_rows, asp_v3 = load_pred_browser_data()
+
+    def get_v3(text):
+        """Return V3 aspect dict for a story text, or empty strings."""
+        entry = asp_v3.get(norm_text(text), {})
+        return {
+            "coa":      entry.get("coa","") or "—",
+            "outcomes": entry.get("outcomes","") or "—",
+            "theme":    entry.get("theme","") or "—",
+        }
+
+    has_preds  = any(r["pred_a_closer"] is not None for r in all_rows)
+    has_gold   = any(r["gold_a_closer"] is not None for r in all_rows)
+    has_aspects = bool(asp_v3)
+
+    # ── Status banners ──
+    col_s1, col_s2, col_s3 = st.columns(3)
+    with col_s1:
+        if not all_rows:
+            st.warning(f"Test triplets not found at:\n`{TEST_A_PATH}`")
+        else:
+            st.markdown(f"""<div class="metric-box">
+              <div class="metric-val" style="font-size:1.9rem;">{len(all_rows)}</div>
+              <div class="metric-label">Track A test triplets</div>
+            </div>""", unsafe_allow_html=True)
+    with col_s2:
+        if not has_preds:
+            st.warning(f"G2 predictions not found at:\n`{PRED_A_PATH}`")
+        else:
+            n_correct = sum(1 for r in all_rows if r["correct"] is True)
+            acc = n_correct / len(all_rows) * 100 if all_rows else 0
+            st.markdown(f"""<div class="metric-box">
+              <div class="metric-val" style="font-size:1.9rem;">{acc:.1f}%</div>
+              <div class="metric-label">G2 Track A accuracy<br>({n_correct}/{len(all_rows)} correct)</div>
+            </div>""", unsafe_allow_html=True)
+    with col_s3:
+        if not has_aspects:
+            st.markdown(f"""<div class="card card-accent-gold" style="font-size:0.82rem; line-height:1.6;">
+              <strong>V3 aspects not loaded.</strong><br>
+              Expected: <code>aspects_cache_v3.json</code><br>
+              Aspect columns will show "—".
+            </div>""", unsafe_allow_html=True)
+        else:
+            st.markdown(f"""<div class="metric-box">
+              <div class="metric-val" style="font-size:1.9rem;">{len(asp_v3):,}</div>
+              <div class="metric-label">Stories in V3 aspect cache</div>
+            </div>""", unsafe_allow_html=True)
+
+    if not all_rows:
+        st.stop()
+
+    st.markdown("---")
+
+    # ── Summary charts (only when predictions exist) ──
+    if has_preds and has_gold:
+        n_correct   = sum(1 for r in all_rows if r["correct"] is True)
+        n_wrong     = sum(1 for r in all_rows if r["correct"] is False)
+        n_unknown   = sum(1 for r in all_rows if r["correct"] is None)
+
+        ch1, ch2 = st.columns(2)
+        with ch1:
+            breakdown_df = pd.DataFrame({
+                "Outcome": ["Correct", "Wrong", "No label"],
+                "Count":   [n_correct, n_wrong, n_unknown],
+            })
+            fig_bd = px.bar(breakdown_df, x="Outcome", y="Count", text="Count",
+                            title="G2 prediction outcomes (Track A test set)",
+                            color="Outcome",
+                            color_discrete_map={"Correct":"#3d6b58","Wrong":"#c23b2a","No label":"#8a9db0"})
+            fig_bd.update_traces(textposition="outside")
+            fig_bd.update_layout(showlegend=False)
+            navy_fig(fig_bd, height=300)
+            st.plotly_chart(fig_bd, use_container_width=True)
+
+        with ch2:
+            # Gold label distribution vs. predicted
+            gold_a = sum(1 for r in all_rows if r["gold_a_closer"] is True)
+            gold_b = sum(1 for r in all_rows if r["gold_a_closer"] is False)
+            pred_a = sum(1 for r in all_rows if r["pred_a_closer"] is True)
+            pred_b = sum(1 for r in all_rows if r["pred_a_closer"] is False)
+            dist_df = pd.DataFrame({
+                "Source": ["Gold", "Gold", "G2 pred.", "G2 pred."],
+                "Label":  ["text_a closer", "text_b closer", "text_a closer", "text_b closer"],
+                "Count":  [gold_a, gold_b, pred_a, pred_b],
+            })
+            fig_dist = px.bar(dist_df, x="Source", y="Count", color="Label", barmode="group",
+                              text="Count",
+                              title="Gold vs. predicted label distribution",
+                              color_discrete_map={"text_a closer":"#2a5f72","text_b closer":"#b8913a"})
+            fig_dist.update_traces(textposition="outside")
+            navy_fig(fig_dist, height=300)
+            st.plotly_chart(fig_dist, use_container_width=True)
+
+    st.markdown("---")
+
+    # ── Filters ──
+    st.markdown("#### Filter and search")
+    fl1, fl2, fl3, fl4 = st.columns([2.5, 1.2, 1.2, 0.8])
+    with fl1:
+        search_q = st.text_input("Search anchor / candidate text", placeholder="keyword…", key="pb_search")
+    with fl2:
+        outcome_filter = st.selectbox(
+            "Prediction outcome",
+            ["All", "Correct ✓", "Wrong ✗", "No label"],
+            key="pb_outcome"
+        )
+    with fl3:
+        gold_filter = st.selectbox(
+            "Gold label",
+            ["All", "text_a is closer", "text_b is closer"],
+            key="pb_gold"
+        )
+    with fl4:
+        per_page = st.selectbox("Per page", [5, 10, 20], index=1, key="pb_per_page")
+
+    # ── Apply filters ──
+    filtered = all_rows
+    if search_q:
+        q = search_q.lower()
+        filtered = [r for r in filtered if q in r["anchor"].lower()
+                    or q in r["text_a"].lower() or q in r["text_b"].lower()]
+    if outcome_filter == "Correct ✓":
+        filtered = [r for r in filtered if r["correct"] is True]
+    elif outcome_filter == "Wrong ✗":
+        filtered = [r for r in filtered if r["correct"] is False]
+    elif outcome_filter == "No label":
+        filtered = [r for r in filtered if r["correct"] is None]
+    if gold_filter == "text_a is closer":
+        filtered = [r for r in filtered if r["gold_a_closer"] is True]
+    elif gold_filter == "text_b is closer":
+        filtered = [r for r in filtered if r["gold_a_closer"] is False]
+
+    total_pages = max(1, (len(filtered) + per_page - 1) // per_page)
+    st.markdown(f"<div class='section-label'>{len(filtered)} triplets match</div>", unsafe_allow_html=True)
+
+    page_num = st.number_input("Page", 1, total_pages, 1, step=1, key="pb_page")
+    page_rows = filtered[(page_num - 1) * per_page : page_num * per_page]
+
+    st.markdown("---")
+
+    # ── Row renderer ──
+    def outcome_badge(row):
+        if row["correct"] is True:
+            return "<span class='pill pill-match'>✓ Correct</span>"
+        if row["correct"] is False:
+            return "<span class='pill pill-miss'>✗ Wrong</span>"
+        return "<span class='pill pill-gold'>? No label</span>"
+
+    def gold_badge(a_closer):
+        if a_closer is True:
+            return "<span class='pill pill-coa'>Gold: text A</span>"
+        if a_closer is False:
+            return "<span class='pill pill-out'>Gold: text B</span>"
+        return "<span class='pill'>Gold: ?</span>"
+
+    def pred_badge(a_closer):
+        if a_closer is True:
+            return "<span class='pill' style='background:#e8f0f8;color:#1a3a5c;border:1px solid #b0c4dc;'>Pred: text A</span>"
+        if a_closer is False:
+            return "<span class='pill' style='background:#f5ede0;color:#5c3a1a;border:1px solid #dcc4a0;'>Pred: text B</span>"
+        return "<span class='pill'>Pred: ?</span>"
+
+    def border_color(row):
+        if row["correct"] is True:  return "#3d6b58"
+        if row["correct"] is False: return "#c23b2a"
+        return "#b8913a"
+
+    for idx, row in enumerate(page_rows, start=(page_num - 1) * per_page + 1):
+        bc = border_color(row)
+        header_badges = (
+            f"{outcome_badge(row)} "
+            f"{gold_badge(row['gold_a_closer'])} "
+            f"{pred_badge(row['pred_a_closer'])}"
+        )
+        preview = row["anchor"][:90] + ("…" if len(row["anchor"]) > 90 else "")
+        with st.expander(f"#{idx:03d} · {preview}", expanded=False):
+            st.markdown(header_badges, unsafe_allow_html=True)
+            st.markdown("<br>", unsafe_allow_html=True)
+
+            # ── Three-column story layout ──
+            c_anchor, c_a, c_b = st.columns(3, gap="small")
+
+            with c_anchor:
+                st.markdown("<div class='section-label'>Anchor</div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='story-block'>{row['anchor']}</div>", unsafe_allow_html=True)
+                # V3 for anchor
+                if has_aspects:
+                    asp = get_v3(row["anchor"])
+                    st.markdown("<div style='margin-top:0.6rem;'><span class='pill pill-coa'>CoA</span></div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='card card-accent-coa' style='font-size:0.8rem;'>{asp['coa']}</div>", unsafe_allow_html=True)
+                    st.markdown("<span class='pill pill-out'>Outcomes</span>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='card card-accent-out' style='font-size:0.8rem;'>{asp['outcomes']}</div>", unsafe_allow_html=True)
+                    st.markdown("<span class='pill pill-thm'>Theme</span>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='card card-accent-thm' style='font-size:0.8rem;'>{asp['theme']}</div>", unsafe_allow_html=True)
+
+            # Determine which candidate is gold-correct and which G2 picked
+            a_is_gold = row["gold_a_closer"]
+            a_is_pred = row["pred_a_closer"]
+
+            for col, text, is_gold, is_pred, label in [
+                (c_a, row["text_a"], a_is_gold is True, a_is_pred is True, "Candidate A"),
+                (c_b, row["text_b"], a_is_gold is False, a_is_pred is False, "Candidate B"),
+            ]:
+                with col:
+                    # Build header indicators
+                    indicators = []
+                    if is_gold:
+                        indicators.append("<span class='pill pill-match'>✓ Gold</span>")
+                    if is_pred:
+                        indicators.append("<span class='pill' style='background:#e8f0f8;color:#1a3a5c;border:1px solid #b0c4dc;'>G2 pick</span>")
+                    # Story border reflects correctness of this candidate
+                    if is_gold and is_pred:
+                        left_col = "#3d6b58"  # correctly picked
+                    elif is_pred and not is_gold:
+                        left_col = "#c23b2a"  # G2 picked this but wrong
+                    elif is_gold and not is_pred:
+                        left_col = "#b8913a"  # gold but not picked
+                    else:
+                        left_col = "#8a9db0"  # neither gold nor picked
+
+                    st.markdown(f"<div class='section-label'>{label}</div>", unsafe_allow_html=True)
+                    if indicators:
+                        st.markdown(" ".join(indicators), unsafe_allow_html=True)
+                    st.markdown(
+                        f"<div class='story-block' style='border-left-color:{left_col};'>{text}</div>",
+                        unsafe_allow_html=True
+                    )
+                    # V3 for candidate
+                    if has_aspects:
+                        asp = get_v3(text)
+                        st.markdown("<div style='margin-top:0.6rem;'><span class='pill pill-coa'>CoA</span></div>", unsafe_allow_html=True)
+                        st.markdown(f"<div class='card card-accent-coa' style='font-size:0.8rem;'>{asp['coa']}</div>", unsafe_allow_html=True)
+                        st.markdown("<span class='pill pill-out'>Outcomes</span>", unsafe_allow_html=True)
+                        st.markdown(f"<div class='card card-accent-out' style='font-size:0.8rem;'>{asp['outcomes']}</div>", unsafe_allow_html=True)
+                        st.markdown("<span class='pill pill-thm'>Theme</span>", unsafe_allow_html=True)
+                        st.markdown(f"<div class='card card-accent-thm' style='font-size:0.8rem;'>{asp['theme']}</div>", unsafe_allow_html=True)
 # ======================== PAGE: Live Aspect Extraction ========================
 elif page == "Live Aspect Extraction":
     import urllib.request, urllib.error, concurrent.futures, time

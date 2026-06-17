@@ -1,0 +1,45 @@
+{
+  "condition": "G2",
+  "name": "Generic latent heads",
+  "condition_note": "Best English single-model setup: full-text encoder with two generic latent heads.",
+  "input_mode": "full_text",
+  "max_len": 512,
+  "use_aspect_heads": true,
+  "use_multiview": false,
+  "active_aspects": [
+    "head1",
+    "head2"
+  ],
+  "use_soft_labels": false,
+  "use_aspects_stage1": false,
+  "stage1_epochs": 1,
+  "stage2_epochs": 2,
+  "stage1_lr": 1e-05,
+  "stage2_lr": 6e-06,
+  "stage1_bs": 2,
+  "stage2_bs": 4,
+  "pred_bs": 16,
+  "enc_bs": 8,
+  "margin": 0.3,
+  "use_synthetic_stage1": true,
+  "use_extra_synthetic": true,
+  "track_a_test": {
+    "accuracy": 0.69,
+    "macro_f1": 0.689999999998275,
+    "tp": 138,
+    "tn": 138,
+    "fp": 54,
+    "fn": 70
+  },
+  "track_b_test": {
+    "accuracy": 0.7175,
+    "macro_f1": 0.7172012938648525,
+    "tp": 137,
+    "tn": 150,
+    "fp": 56,
+    "fn": 57,
+    "missing": 0,
+    "embedding_dim": 1536
+  },
+  "cv": null
+}
