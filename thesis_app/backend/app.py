@@ -560,7 +560,7 @@ with st.sidebar:
             "📊 Experimental Results",
             "🌍 Multilingual Comparison",
             "🌐 Translation Explorer",
-            "🔍 Prediction Browser",
+            "🔍 Prediction Explorer",
             "⚡ Live Aspect Extraction",
         ],
         label_visibility="collapsed",
@@ -582,7 +582,7 @@ with st.sidebar:
 # ======================== PAGE: Thesis Overview ========================
 if page == "Thesis Overview":
     # Hero
-    st.markdown("<div class='thesis-eyebrow'>Master Dissertation · July 2026</div>", unsafe_allow_html=True)
+    st.markdown("<div class='thesis-eyebrow'>Master Thesis · July 2026</div>", unsafe_allow_html=True)
     st.markdown("# Latent and Explicit Narrative Representations for Multilingual Narrative Similarity")
     st.markdown("""
 <div style="font-family: Inter, sans-serif; font-size: 0.9rem; color: #4a5d72; margin-bottom: 1.5rem; line-height: 1.7;">
@@ -596,8 +596,8 @@ Faculty of Computer Science, Alexandru Ioan Cuza University, Iași &nbsp;·&nbsp
 <strong>Abstract.</strong> Compared to text similarity where we look for overlap of words, narrative similarity is more
 challenging because stories can align in plot, outcomes, or abstract meaning even when their characters,
 settings, and wording differ. This thesis evaluates neural methods for narrative similarity assessment
-using the <strong>SemEval-2026 Task 4</strong> benchmark, focusing on how modelling decisions affect both direct
-triplet comparison (Track A) and embedding-based story representation (Track B). The central finding is
+using the SemEval-2026 Task 4 benchmark, focusing on how modelling decisions affect both direct
+triplet comparison and embedding-based story representation. The central finding is
 that flexible latent representations learned from full text are more effective for predictive accuracy,
 while explicit narrative aspects remain valuable for interpretability and error analysis.
 </div>
@@ -1657,12 +1657,12 @@ elif page == "Translation Explorer":
     else:
         st.info("Translation quality report not found - load `translation_quality_report.json` to see flagged cases.")
 
-# ======================== PAGE: Prediction Browser ========================
-elif page == "Prediction Browser":
+# ======================== PAGE: Prediction Explorer ========================
+elif page == "Prediction Explorer":
     st.markdown("<div class='thesis-eyebrow'>Chapter 5 · Section 5.4 · G2 Condition</div>", unsafe_allow_html=True)
-    st.markdown("## Prediction Browser · G2 Test-Set Results")
+    st.markdown("## Prediction Explorer · G2 Test-Set Results")
     st.markdown(
-        "Browse G2 model predictions on both test tracks. "
+        "Explore G2 model predictions on both test tracks. "
         "**Track A** shows direct triplet ranking decisions. "
         "**Track B** shows embedding cosine similarity scores from the saved `.npy` file. "
         "Version 3 aspect extractions are shown for both tracks for interpretability."
@@ -1961,6 +1961,19 @@ elif page == "Prediction Browser":
     with tab_b:
         b_rows, has_embs, has_b_labels = load_track_b_data()
 
+        @st.cache_data
+        def load_trackb_raw_embeddings():
+            if not Path(EMB_B_PATH).exists() or not Path(TEST_B_PATH).exists():
+                return None, []
+            with open(TEST_B_PATH, encoding="utf-8") as f:
+                stories = [json.loads(l)["text"].strip() for l in f if l.strip()]
+            embs = np.load(str(EMB_B_PATH), allow_pickle=False).astype(np.float32)
+            norms = np.linalg.norm(embs, axis=1, keepdims=True)
+            embs = embs / np.clip(norms, 1e-12, None)
+            return embs, stories
+
+        emb_matrix, stories = load_trackb_raw_embeddings()
+
         # ── Status metrics ──
         ms1, ms2, ms3, ms4 = st.columns(4)
         with ms1:
@@ -2038,6 +2051,154 @@ elif page == "Prediction Browser":
                 st.plotly_chart(fig_gap, use_container_width=True)
 
             st.markdown("<div class='baseline-note'>Cosine gap = sim(anchor, text_A) − sim(anchor, text_B). Positive → model predicts text_A is closer. Correct predictions cluster away from zero; wrong predictions often have a small gap, indicating near-ties where the model is uncertain.</div>", unsafe_allow_html=True)
+            # ── Embedding Space Visualization ──
+        if has_embs:
+            st.markdown("---")
+            st.markdown("### Embedding Space Visualization")
+            st.markdown(
+                "Projects the 1536-dim G2 Track B embeddings (global + 2×256-dim latent heads, "
+                "concatenated and L2-normalised) into 2D or 3D for visual inspection. "
+                "Each point is one of the 849 Track B stories; color encodes whether the story "
+                "participated in a correctly or incorrectly predicted triplet."
+            )
+
+            viz_c1, viz_c2, viz_c3 = st.columns([1, 1, 1.4])
+            with viz_c1:
+                viz_method = st.radio("Projection method", ["PCA", "t-SNE"], horizontal=True, key="tb_viz_method")
+            with viz_c2:
+                viz_dims = st.radio("Dimensions", ["2D", "3D"], horizontal=True, key="tb_viz_dims")
+            with viz_c3:
+                viz_color_by = st.selectbox(
+                    "Color points by",
+                    ["Prediction outcome", "Role in triplet (anchor / candidate)", "Gold-closer vs. not"],
+                    key="tb_viz_color"
+                )
+
+            @st.cache_data
+            def compute_projection(_emb_matrix, method, n_components, sample_cap=600, seed=42):
+                """Project embeddings to n_components dims. Subsamples for t-SNE if needed.
+                Returns (coords, sampled_indices)."""
+                n = _emb_matrix.shape[0]
+                rng = np.random.default_rng(seed)
+                if method == "t-SNE" and n > sample_cap:
+                    idx = rng.choice(n, size=sample_cap, replace=False)
+                    idx.sort()
+                else:
+                    idx = np.arange(n)
+                X = _emb_matrix[idx]
+
+                if method == "PCA":
+                    from sklearn.decomposition import PCA
+                    reducer = PCA(n_components=n_components, random_state=seed)
+                    coords = reducer.fit_transform(X)
+                    var_explained = reducer.explained_variance_ratio_
+                else:
+                    from sklearn.manifold import TSNE
+                    perplexity = min(30, max(5, len(idx) // 10))
+                    reducer = TSNE(n_components=n_components, random_state=seed,
+                                   perplexity=perplexity, init="pca", learning_rate="auto")
+                    coords = reducer.fit_transform(X)
+                    var_explained = None
+                return coords, idx, var_explained
+
+            n_comp = 3 if viz_dims == "3D" else 2
+            with st.spinner(f"Computing {viz_method} projection…"):
+                coords, sample_idx, var_explained = compute_projection(emb_matrix, viz_method, n_comp)
+
+            # Build per-story metadata for coloring, aligned to sample_idx
+            story_role = {}    # story text -> "anchor" / "candidate" / "both"
+            story_outcome = {} # story text -> "Correct" / "Wrong" / "Not in eval"
+            story_gold = {}    # story text -> "Gold-closer" / "Not gold-closer" / "Anchor"
+
+            for r in b_rows:
+                an, ta, tb_ = r["anchor"], r["text_a"], r["text_b"]
+                outcome_lbl = "Correct" if r["correct"] is True else ("Wrong" if r["correct"] is False else "Not in eval")
+
+                for s in (an,):
+                    story_role[s] = "Anchor" if story_role.get(s) in (None, "Anchor") else "Anchor + Candidate"
+                    story_gold[s] = "Anchor"
+                    if s not in story_outcome or story_outcome[s] == "Not in eval":
+                        story_outcome[s] = outcome_lbl
+
+                for s, is_gold in [(ta, r["gold_a_closer"] is True), (tb_, r["gold_a_closer"] is False)]:
+                    prev_role = story_role.get(s)
+                    story_role[s] = "Candidate" if prev_role in (None, "Candidate") else "Anchor + Candidate"
+                    if s not in story_gold or story_gold[s] != "Anchor":
+                        story_gold[s] = "Gold-closer" if is_gold else "Not gold-closer"
+                    if s not in story_outcome or story_outcome[s] == "Not in eval":
+                        story_outcome[s] = outcome_lbl
+
+            sampled_stories = [stories[i] for i in sample_idx]
+            plot_df = pd.DataFrame({
+                "x": coords[:, 0],
+                "y": coords[:, 1],
+                "story_preview": [s[:90] + ("…" if len(s) > 90 else "") for s in sampled_stories],
+                "Prediction outcome": [story_outcome.get(s, "Not in eval") for s in sampled_stories],
+                "Role in triplet (anchor / candidate)": [story_role.get(s, "Not in eval") for s in sampled_stories],
+                "Gold-closer vs. not": [story_gold.get(s, "Not in eval") for s in sampled_stories],
+            })
+            if n_comp == 3:
+                plot_df["z"] = coords[:, 2]
+
+            color_map_outcome = {"Correct": "#3d6b58", "Wrong": "#c23b2a", "Not in eval": "#c4bfb4"}
+            color_map_role = {"Anchor": "#0f1e35", "Candidate": "#2a5f72", "Anchor + Candidate": "#b8913a", "Not in eval": "#c4bfb4"}
+            color_map_gold = {"Anchor": "#0f1e35", "Gold-closer": "#3d6b58", "Not gold-closer": "#8a9db0", "Not in eval": "#c4bfb4"}
+            color_map_use = {"Prediction outcome": color_map_outcome,
+                              "Role in triplet (anchor / candidate)": color_map_role,
+                              "Gold-closer vs. not": color_map_gold}[viz_color_by]
+
+            title_suffix = f" ({len(sample_idx)} of {emb_matrix.shape[0]} stories sampled)" if len(sample_idx) < emb_matrix.shape[0] else ""
+
+            if n_comp == 2:
+                fig_emb = px.scatter(
+                    plot_df, x="x", y="y", color=viz_color_by,
+                    hover_data={"story_preview": True, "x": False, "y": False},
+                    title=f"{viz_method} projection of Track B embeddings{title_suffix}",
+                    color_discrete_map=color_map_use,
+                )
+                fig_emb.update_traces(marker=dict(size=7, opacity=0.75, line=dict(width=0.5, color="white")))
+                fig_emb.update_xaxes(title="Component 1")
+                fig_emb.update_yaxes(title="Component 2")
+                navy_fig(fig_emb, height=480)
+                st.plotly_chart(fig_emb, use_container_width=True)
+            else:
+                fig_emb = px.scatter_3d(
+                    plot_df, x="x", y="y", z="z", color=viz_color_by,
+                    hover_data={"story_preview": True, "x": False, "y": False, "z": False},
+                    title=f"{viz_method} projection of Track B embeddings{title_suffix}",
+                    color_discrete_map=color_map_use,
+                )
+                fig_emb.update_traces(marker=dict(size=4, opacity=0.75, line=dict(width=0.3, color="white")))
+                fig_emb.update_layout(
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    font=dict(family="Inter, sans-serif", color="#0f1e35", size=11),
+                    scene=dict(
+                        xaxis_title="Component 1", yaxis_title="Component 2", zaxis_title="Component 3",
+                        xaxis=dict(backgroundcolor="#f9f7f3"), yaxis=dict(backgroundcolor="#f9f7f3"),
+                        zaxis=dict(backgroundcolor="#f9f7f3"),
+                    ),
+                    height=560, margin=dict(l=0, r=0, t=44, b=0),
+                    title=dict(font=dict(family="EB Garamond, Georgia, serif", size=15, color="#0f1e35")),
+                )
+                st.plotly_chart(fig_emb, use_container_width=True)
+
+            if viz_method == "PCA" and var_explained is not None:
+                var_str = " + ".join(f"PC{i+1}: {v*100:.1f}%" for i, v in enumerate(var_explained))
+                st.markdown(
+                    f"<div class='baseline-note'>Variance explained — {var_str} "
+                    f"(total: {var_explained.sum()*100:.1f}%). PCA is linear and deterministic; "
+                    f"low explained variance means the embedding space is not well captured by a "
+                    f"{n_comp}D linear projection, so cluster structure here is only a rough hint.</div>",
+                    unsafe_allow_html=True
+                )
+            else:
+                st.markdown(
+                    "<div class='baseline-note'>t-SNE is non-linear and stochastic (fixed seed for "
+                    "reproducibility here); distances between distant clusters are not meaningful, "
+                    "only local neighbourhood structure. Sampled when the story count exceeds 600 "
+                    "for responsiveness.</div>",
+                    unsafe_allow_html=True
+                )
             st.markdown("---")
 
         # ── Filters ──
