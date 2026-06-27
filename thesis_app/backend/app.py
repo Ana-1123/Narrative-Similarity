@@ -351,6 +351,8 @@ DATA_PATHS = {
                                    "Condition_G2_512_full_train_track_a.jsonl"),
     "test_a_labels": resolve_data_path("narrative_nlp/dataset/test_track_a_labels.jsonl",
                                     "test_track_a_labels.jsonl"),
+    "test_b_labels": resolve_data_path("narrative_nlp/dataset/test_track_b_labels.jsonl",
+                                    "test_track_b_labels.jsonl"),
 }
 
 def norm_text(text: str) -> str:
@@ -382,6 +384,10 @@ def load_synth_rows():    return load_jsonl_file(DATA_PATHS["synth"])
 def load_synth_new_rows(): return load_jsonl_file(DATA_PATHS["synth_new"])
 @st.cache_data
 def load_dev_labels():    return load_jsonl_file(DATA_PATHS["dev_labels"])
+@st.cache_data
+def load_test_a_labels(): return load_jsonl_file(DATA_PATHS["test_a_labels"])
+@st.cache_data
+def load_test_b_labels(): return load_jsonl_file(DATA_PATHS["test_b_labels"])
 
 @st.cache_data
 def load_aspects_cache(version: int) -> Dict:
@@ -698,13 +704,14 @@ while explicit narrative aspects remain valuable for interpretability and error 
 elif page == "Dataset & EDA":
     st.markdown("<div class='thesis-eyebrow'>Chapter 3 · Section 3.1 & 3.5</div>", unsafe_allow_html=True)
     st.markdown("## Dataset & Exploratory Data Analysis")
-    st.markdown("SemEval-2026 Task 4 narrative similarity benchmark - story summaries from the *Tell Me Again!* corpus linked via Wikidata identifiers.")
 
     dev   = load_dev_triples()
     test_a = load_test_a_rows()
     test_b = load_test_b_rows()
     synth  = load_synth_rows()
     synth_new = load_synth_new_rows()
+    ta_labels  = load_test_a_labels()
+    tb_labels  = load_test_b_labels()
 
     if not dev:
         st.warning("`dev_track_a.jsonl` not found - data files not loaded.")
@@ -764,13 +771,12 @@ elif page == "Dataset & EDA":
 
     summary_df = pd.DataFrame([
         row_stats("Dev set (Track A)", dev_texts, dev),
-        row_stats("Test set (Track A)", ta_texts, test_a, labelled=False),
-        row_stats("Test set (Track B)", tb_texts, test_b, labelled=False),
+        row_stats("Test set (Track A)", ta_texts, ta_labels),
+        row_stats("Test set (Track B)", tb_texts, tb_labels),
         row_stats("Organiser synthetic", syn_texts, synth),
         row_stats("Additional synthetic", synn_texts, synth_new),
     ])
     st.dataframe(summary_df, hide_index=True, use_container_width=True)
-    st.markdown("<div class='baseline-note'>Label balance close to 50% across all labelled splits prevents positional strategies from inflating accuracy.</div>", unsafe_allow_html=True)
 
     st.markdown("---")
 
@@ -910,7 +916,7 @@ elif page == "Dataset & EDA":
 elif page == "Aspect Extraction Versions":
     st.markdown("<div class='thesis-eyebrow'>Chapter 3 · Section 3.4</div>", unsafe_allow_html=True)
     st.markdown("## Narrative Aspect Extraction Pipeline")
-    st.markdown("Three extraction versions were developed, each reflecting a different trade-off between **informativeness**, **structure**, and **compactness**. All are produced via zero-shot prompting of instruction-tuned Llama 3.1 8B (local inference with Ollama).")
+    st.markdown("Three extraction versions were developed, each reflecting a different trade-off between **informativeness**, **structure**, and **compactness**. All are produced via zero-shot prompting of instruction-tuned Llama 3.1 8B.")
 
     st.markdown("### Table 3.4 · Overview of Extraction Versions")
 
