@@ -35,11 +35,6 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ======================== ACADEMIC DESIGN SYSTEM ========================
-# Visual identity: deep navy + aged parchment + vermillion accent
-# Typography: academic serif for display, humanist sans for UI, mono for data
-# Signature element: the three narrative aspects rendered as glowing "facet chips"
-# with animated underscore lines on hover - a callback to academic annotation marks.
 
 STYLE = """
 <style>
@@ -442,13 +437,13 @@ DF_166_GOLD = pd.DataFrame([
 ], columns=["Model", "Ver.", "Aspect", "%pos>neg", "Diff.", "Cohen's d", "95% CI", "p", "Sig."])
 
 DF_CORRELATIONS = pd.DataFrame([
-    ["RoBERTa", "V1 (narrative prose)",  "CoA–Full",      0.2719, 0.0004, "***"],
-    ["RoBERTa", "V1 (narrative prose)",  "Outcomes–Full", 0.3943, 0.0000, "***"],
-    ["RoBERTa", "V1 (narrative prose)",  "CoA–Outcomes",  0.2356, 0.0022, "**"],
-    ["BGE-M3",  "V2 (role-label steps)", "CoA–Full",      0.2057, 0.0078, "**"],
-    ["BGE-M3",  "V2 (role-label steps)", "Outcomes–Full", 0.0486, 0.5338, "n.s."],
-    ["BGE-M3",  "V2 (role-label steps)", "CoA–Outcomes",  0.2120, 0.0061, "**"],
-    ["BGE-M3",  "V3 (compact phrases)",  "Theme–Full",    0.0267, 0.7328, "n.s."],
+    ["RoBERTa", "V1 (narrative prose)",  "CoA-Full",      0.2719, 0.0004, "***"],
+    ["RoBERTa", "V1 (narrative prose)",  "Outcomes-Full", 0.3943, 0.0000, "***"],
+    ["RoBERTa", "V1 (narrative prose)",  "CoA-Outcomes",  0.2356, 0.0022, "**"],
+    ["BGE-M3",  "V2 (role-label steps)", "CoA-Full",      0.2057, 0.0078, "**"],
+    ["BGE-M3",  "V2 (role-label steps)", "Outcomes-Full", 0.0486, 0.5338, "n.s."],
+    ["BGE-M3",  "V2 (role-label steps)", "CoA-Outcomes",  0.2120, 0.0061, "**"],
+    ["BGE-M3",  "V3 (compact phrases)",  "Theme-Full",    0.0267, 0.7328, "n.s."],
 ], columns=["Model", "Version", "Pair", "r", "p-value", "Sig."])
 
 DF_INPUT_LENGTH = pd.DataFrame([
@@ -649,7 +644,7 @@ while explicit narrative aspects remain valuable for interpretability and error 
         ("RQ4", "What is the effect of additional synthetic data on narrative similarity models?",
          "It harms the baseline (Track B: 69.25%→61.00%) but substantially helps G2 (64.75%→71.75%). Latent heads regularise the model against diverse synthetic examples."),
         ("RQ5", "How does the approach behave when translated into Romanian via machine translation?",
-         "Performance drops 3–5pp. multilingual-e5-base is more robust (68.25% EN → 63.50% RO). The experiment confirms viability but highlights sensitivity to translation noise."),
+         "Performance drops 3-5pp. multilingual-e5-base is more robust (68.25% EN → 63.50% RO). The experiment confirms viability but highlights sensitivity to translation noise."),
         ("RQ6", "How can an interactive application support dataset exploration, aspect inspection, and result visualisation?",
          "This Streamlit application addresses RQ6 directly - supporting live aspect extraction, dataset EDA, and complete result visualisation."),
     ]
@@ -665,12 +660,11 @@ while explicit narrative aspects remain valuable for interpretability and error 
     # Contributions
     st.markdown("### Main Contributions")
     contribs = [
-        ("Reproducible baseline", "Two-stage contrastive pipeline (Stage 1: synthetic triplets, Stage 2: dev fine-tuning) with fixed seeds and deterministic CUDA settings."),
         ("Input length ablation", "Systematic evaluation at 128 / 256 / 384 / 512 tokens revealing the asymmetric sensitivity of Track A and Track B."),
         ("G2 latent-head architecture", "Two generic 256-dim projection heads over the full-text encoder, trained with a head triplet loss regulariser (weight 0.3)."),
         ("Three-version aspect extraction pipeline", "Verbose prose (V1), structured role-label (V2), and compact phrase (V3) variants, with a quantitative informativeness analysis."),
         ("Synthetic data experiments", "LLM-generated additional triplets that harm the baseline but substantially benefit the G2 model via latent regularisation."),
-        ("English–Romanian multilingual comparison", "NLLB-200 machine-translated dataset evaluated with two multilingual encoders (E5 and MPNet) in a controlled within-model comparison."),
+        ("English-Romanian multilingual comparison", "NLLB-200 machine-translated dataset evaluated with two multilingual encoders (E5 and MPNet) in a controlled within-model comparison."),
         ("Embedding ensemble for Track B", "Task-tuned G2 embeddings combined with zero-shot Qwen3-Embedding-0.6B (0.90/0.10 weight), achieving 72.00% Track B accuracy."),
         ("Interactive Streamlit application", "This application - supporting live extraction, EDA, and result visualisation."),
     ]
@@ -749,8 +743,8 @@ elif page == "Dataset & EDA":
 
     st.markdown("---")
 
-    # ── Table 3.5: Dataset composition ──
-    st.markdown("### Table 3.5 · Dataset Composition and Label Balance")
+    # Dataset composition
+    st.markdown("### Dataset Composition and Label Balance")
 
     def row_stats(name, texts, rows, labelled=True):
         wl = [word_count(t) for t in texts]
@@ -777,32 +771,35 @@ elif page == "Dataset & EDA":
         row_stats("Additional synthetic", synn_texts, synth_new),
     ])
     st.dataframe(summary_df, hide_index=True, use_container_width=True)
+    st.markdown("<div class='baseline-note'>Additional synthetic stories are ~30 words longer on average, generated by llama3.1:8b following organiser-style prompts. No text overlap between the two sources.</div>", unsafe_allow_html=True)
 
     st.markdown("---")
 
-    # ── Figure 3.1: token length analysis ──
-    st.markdown("### Figure 3.1 · Tokenizer Length Analysis (Table 3.6)")
+    # Token length analysis
+    st.markdown("### Tokenizer Length Analysis")
     st.markdown("Texts exceeding each maximum length under the `all-roberta-large-v1` tokenizer.")
 
-    # Approximate table 3.6 from thesis
+    # Table 5 from thesis
     tok_df = pd.DataFrame([
-        ["Organiser synthetic", 5691, 190.65, 193.0, 367, 93.06, 3.58, 0.00],
-        ["Additional synthetic", 3291, 220.50, 219.0, 312, 100.00, 9.75, 0.00],
-        ["Development set",      479,  156.18, 150.0, 390, 64.30,  6.89, 0.42],
-        ["Track A test",         848,  155.12, 148.0, 626, 61.91,  6.01, 0.47],
-        ["Track B test",         849,  154.06, 149.0, 436, 64.19,  5.54, 0.47],
-    ], columns=["Dataset", "Unique texts", "Mean tokens", "Median tokens", "Max tokens", ">128 (%)", ">256 (%)", ">384 (%)"])
+        ["Organiser synthetic", 5691, 190.65, 193.0, 367, 93.06, 3.58, 0.00, 0.00],
+        ["Additional synthetic", 3291, 220.50, 219.0, 312, 100.00, 9.75, 0.00, 0.00],
+        ["Add. from Tell-Me-Again!", 3119, 167.29, 148.0, 416, 57.71, 18.18, 0.96, 0.00],
+        ["Development set",      479,  156.18, 150.0, 390, 64.30,  6.89, 0.42, 0.00],
+        ["Track A test",         848,  155.12, 148.0, 626, 61.91,  6.01, 0.47, 0.12],
+        ["Track B test",         849,  154.06, 149.0, 436, 64.19,  5.54, 0.47, 0.00],
+    ], columns=["Dataset", "Unique texts", "Mean tokens", "Median tokens", "Max tokens", ">128 (%)", ">256 (%)", ">384 (%)", ">512 (%)"])
     st.dataframe(tok_df, hide_index=True, use_container_width=True)
 
     c_left, c_right = st.columns(2)
     with c_left:
         pct_df = pd.DataFrame({
-            "max_len": [128, 256, 384],
-            "Organiser synthetic": [93.06, 3.58, 0.00],
-            "Additional synthetic": [100.00, 9.75, 0.00],
-            "Development set": [64.30, 6.89, 0.42],
-            "Track A test": [61.91, 6.01, 0.47],
-            "Track B test": [64.19, 5.54, 0.47],
+            "max_len": [128, 256, 384, 512],
+            "Organiser synthetic": [93.06, 3.58, 0.00, 0.00],
+            "Additional synthetic": [100.00, 9.75, 0.00, 0.00],
+            "Add. from Tell-Me-Again!": [100.00, 9.75, 0.00, 0.00],
+            "Development set": [64.30, 6.89, 0.42, 0.00],
+            "Track A test": [61.91, 6.01, 0.47, 0.12],
+            "Track B test": [64.19, 5.54, 0.47, 0.00],
         })
         pct_melted = pct_df.melt("max_len", var_name="Dataset", value_name="Texts truncated (%)")
         fig = px.line(pct_melted, x="max_len", y="Texts truncated (%)", color="Dataset",
@@ -816,9 +813,11 @@ elif page == "Dataset & EDA":
         ret_df = pd.DataFrame({
             "max_len": [128, 256, 384, 512],
             "Organiser synthetic": [0.69, 0.99, 1.00, 1.00],
-            "Additional synthetic": [0.59, 0.97, 1.00, 1.00],
+            "Additional synthetic": [0.59, 0.99, 1.00, 1.00],
+            "Add. from Tell-Me-Again!": [0.78, 0.97, 0.99, 1.00],
             "Development set": [0.82, 0.99, 1.00, 1.00],
-            "Track A / B test": [0.82, 0.99, 1.00, 1.00],
+            "Track A test": [0.82, 0.99, 1.00, 1.00],
+            "Track B test": [0.82, 0.99, 1.00, 1.00],
         })
         ret_melted = ret_df.melt("max_len", var_name="Dataset", value_name="Mean retained fraction")
         fig2 = px.line(ret_melted, x="max_len", y="Mean retained fraction", color="Dataset",
@@ -829,7 +828,7 @@ elif page == "Dataset & EDA":
         fig2.update_yaxes(range=[0.5, 1.02])
         st.plotly_chart(fig2, use_container_width=True)
 
-    st.markdown("<div class='baseline-note'>128 tokens removes too much context (especially synthetic stories). 384–512 tokens retain nearly all narrative information - motivating the input-length ablation in §5.2.</div>", unsafe_allow_html=True)
+    st.markdown("<div class='baseline-note'>128 tokens removes too much context (especially synthetic stories). 384-512 tokens retain nearly all narrative information - motivating the input-length ablation in §5.2.</div>", unsafe_allow_html=True)
 
     st.markdown("---")
 
@@ -893,14 +892,14 @@ elif page == "Dataset & EDA":
 
     st.markdown("---")
 
-    # ── Synthetic LLMs ──
-    st.markdown("### Table 3.7 · Organiser vs. Additional Synthetic Data")
-    cmp_df = pd.DataFrame([
-        ["Organiser synthetic", 1900, 5691, 157.85, 158.0, 49.63],
-        ["Additional synthetic", 1097, 3291, 187.50, 186.0, 49.68],
-    ], columns=["Source","Rows","Unique texts","Mean words","Median words","text_a closer (%)"])
-    st.dataframe(cmp_df, hide_index=True, use_container_width=True)
-    st.markdown("<div class='baseline-note'>Additional synthetic stories are ~30 words longer on average, generated by llama3.1:8b following organiser-style prompts. No text overlap between the two sources.</div>", unsafe_allow_html=True)
+    # # ── Synthetic LLMs ──
+    # st.markdown("### Organiser vs. Additional Data")
+    # cmp_df = pd.DataFrame([
+    #     ["Organiser synthetic", 1900, 5691, 157.85, 158.0, 49.63],
+    #     ["Additional synthetic", 1097, 3291, 187.50, 186.0, 49.68],
+    # ], columns=["Source","Rows","Unique texts","Mean words","Median words","text_a closer (%)"])
+    # st.dataframe(cmp_df, hide_index=True, use_container_width=True)
+    # st.markdown("<div class='baseline-note'>Additional synthetic stories are ~30 words longer on average, generated by llama3.1:8b following organiser-style prompts. No text overlap between the two sources.</div>", unsafe_allow_html=True)
 
     synth_model_df = build_synth_model_stats()
     if not synth_model_df.empty:
@@ -918,7 +917,7 @@ elif page == "Aspect Extraction Versions":
     st.markdown("## Narrative Aspect Extraction Pipeline")
     st.markdown("Three extraction versions were developed, each reflecting a different trade-off between **informativeness**, **structure**, and **compactness**. All are produced via zero-shot prompting of instruction-tuned Llama 3.1 8B.")
 
-    st.markdown("### Table 3.4 · Overview of Extraction Versions")
+    st.markdown("### Overview of Extraction Versions")
 
     v_data = [
         ("V1", "Verbose narrative prose",
@@ -945,7 +944,7 @@ elif page == "Aspect Extraction Versions":
 
     st.markdown("---")
 
-    # ── Aspect length analysis (Table 3.9) ──
+    # ── Aspect length analysis ──
     st.markdown("### Table 3.9 · Mean Word Length of Extracted Aspects")
     len_df = pd.DataFrame([
         ["V1 - verbose prose",      65.03, 50.60, 55.59],
@@ -1029,12 +1028,12 @@ elif page == "Aspect Informativeness":
     st.markdown("## Aspect Informativeness Analysis")
     st.markdown("""
 For each development triple, the anchor and both candidates are encoded with the same encoder.
-Cosine similarity is computed for anchor–candidate pairs. The metric **%pos > neg** measures how
+Cosine similarity is computed for anchor-candidate pairs. The metric **%pos > neg** measures how
 often the gold-closer candidate has higher similarity - values above 50% indicate a discriminative signal.
 Statistical significance assessed via paired *t*-test (α = 0.05).
 """)
 
-    st.markdown("### Table 3.10 · Aspect Informativeness - RoBERTa-large, 200 dev triples")
+    st.markdown("### Aspect Informativeness - RoBERTa-large, 200 dev triples")
     st.dataframe(DF_ROBERTA_200, hide_index=True, use_container_width=True)
 
     st.markdown("### Aspect Informativeness - BGE-M3, 200 dev triples")
@@ -1075,14 +1074,14 @@ Statistical significance assessed via paired *t*-test (α = 0.05).
 
     st.markdown("---")
 
-    st.markdown("### Table 4 (Thesis) · Aspect Informativeness - 166 Clean Triples with Gold Aspect Labels")
+    st.markdown("### Aspect Informativeness - 166 Clean Triples with Gold Aspect Labels")
     st.dataframe(DF_166_GOLD, hide_index=True, use_container_width=True)
     st.markdown("*Significance: ** p < 0.01, * p < 0.05. Only aspects with gold matching labels included.*")
 
     st.markdown("---")
 
     st.markdown("### Complementarity Analysis - Aspect-to-Full-Text Correlations")
-    st.markdown("Low correlation with full text means the aspect captures *different* information - ideal for complementarity. Low mutual correlation (CoA–Outcomes) also desirable.")
+    st.markdown("Low correlation with full text means the aspect captures *different* information - ideal for complementarity. Low mutual correlation (CoA-Outcomes) also desirable.")
     st.dataframe(DF_CORRELATIONS, hide_index=True, use_container_width=True)
 
     corr_fig = px.bar(DF_CORRELATIONS, x="Pair", y="r", color="Model", barmode="group",
@@ -1152,7 +1151,7 @@ During Stage 1, heads receive a triplet loss signal: $\\mathcal{L}_{G2} = 0.7\\m
 For Track B, the final embedding is the concatenated L2-normalised vector: $e_{G2} = \\text{norm}([g; h_1; h_2])$.
         """)
 
-        st.markdown("#### Effect of Additional Synthetic Data (Table 5.3)")
+        st.markdown("#### Effect of Additional Synthetic Data")
         st.dataframe(DF_SYNTHETIC_EFFECT, hide_index=True, use_container_width=True)
 
         synth_fig_data = []
@@ -1184,7 +1183,7 @@ making it robust to longer and more diverse synthetic examples generated by a di
 """, unsafe_allow_html=True)
 
         st.markdown("---")
-        st.markdown("#### Final G2 Performance vs. Best Baseline (Table 5.4)")
+        st.markdown("#### Final G2 Performance vs. Best Baseline")
         st.dataframe(DF_BEST_MODELS, hide_index=True, use_container_width=True)
 
         best_fig = go.Figure()
@@ -1211,7 +1210,7 @@ making it robust to longer and more diverse synthetic examples generated by a di
 """, unsafe_allow_html=True)
 
     with tab3:
-        st.markdown("### RQ3 · Explicit Aspect-Based Model Variants (Table 5.5)")
+        st.markdown("### RQ3 · Explicit Aspect-Based Model Variants")
         st.markdown("All variants use combined synthetic data and max_len=512 (except P* and P at 384 due to memory). Aspect choice: CoA from V1, Outcomes & Theme from V2.")
         st.dataframe(DF_ASPECTS_PERF, hide_index=True, use_container_width=True)
 
@@ -1265,7 +1264,7 @@ making the two sources genuinely complementary. No additional training required 
 # ======================== PAGE: Multilingual ========================
 elif page == "Multilingual Comparison":
     st.markdown("<div class='thesis-eyebrow'>Chapter 3 · Section 3.3 · Chapter 5 · Section 5.6</div>", unsafe_allow_html=True)
-    st.markdown("## Multilingual English–Romanian Comparison")
+    st.markdown("## Multilingual English-Romanian Comparison")
     st.markdown("""
 **RQ5:** Does the narrative similarity pipeline remain effective when stories are translated to Romanian?
 
@@ -1277,7 +1276,7 @@ Two multilingual encoders are evaluated with the **same G2-style architecture** 
 two generic latent heads) to isolate the effect of language change from encoder choice.
 """)
 
-    st.markdown("### Table 5.7 · English vs. Romanian Machine-Translation Results")
+    st.markdown("### English vs. Romanian Machine-Translation Results")
     st.dataframe(DF_MULTILINGUAL, hide_index=True, use_container_width=True)
 
     # Performance drop table
@@ -2303,7 +2302,7 @@ elif page == "Live Aspect Extraction":
     DEFAULT_MODEL = os.getenv("OLLAMA_MODEL","llama3.1:8b")
     ASPECT_KEYS = ("coa","outcomes","theme")
 
-    # ── Prompts (same as thesis) ──
+    # ── Prompts──
     V1_PROMPTS = {
         "coa": """You are a narrative analyst. Read the story summary below and write ONLY the sequence of plot events - what happens, in what order, and what causes what. Do NOT mention character names, specific locations, or themes. Do NOT write any introduction, heading, or label before your answer. Begin your response immediately with the first event. Write 2-4 sentences.\n\nStory:\n{story}\n\nResponse:""",
         "outcomes": """You are a narrative analyst. Read the story summary below and write ONLY the final outcome and resolution. What is the end state? What did the protagonist ultimately achieve, lose, or experience? Do NOT describe how they got there. Do NOT write any introduction, heading, or label. Begin your response immediately with the outcome. Write 1-2 sentences.\n\nStory:\n{story}\n\nResponse:""",
