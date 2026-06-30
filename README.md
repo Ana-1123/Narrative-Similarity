@@ -22,7 +22,6 @@ narrative_nlp/
 ├── aspect_informativeness_analysis.ipynb
 ├── aspect_informativeness_vs_gold_aspect_labels.ipynb
 ├── aspect_informativeness_vs_gold_aspect_labels_bge_m.ipynb
-├── aspect-aware-residual-solution-deterministic.ipynb
 ├── build-tell-me-again-training-data-redesigned.ipynb
 ├── clean_track_b_embedding_ensemble.ipynb
 ├── extract-aspects-with-llama-v1.py
