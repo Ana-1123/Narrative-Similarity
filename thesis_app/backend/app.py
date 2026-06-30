@@ -341,6 +341,7 @@ DATA_PATHS = {
     "test_b":     resolve_data_path("narrative_nlp/dataset/test_track_b.jsonl", "test_track_b.jsonl"),
     "synth":      resolve_data_path("narrative_nlp/dataset/synthetic_data_for_classification.jsonl", "synthetic_data_for_classification.jsonl"),
     "synth_new":  resolve_data_path("narrative_nlp/dataset/synthetic_data_new.jsonl", "synthetic_data_new.jsonl"),
+    "tell_me_again": resolve_data_path("narrative_nlp/dataset/tell_me_again_triplets.jsonl", "tell_me_again_triplets.jsonl"),
     "trans_quality": resolve_data_path("narrative_nlp/dataset/romanian_narrative_similarity_dataset/translation_quality_report.json", "translation_quality_report.json"),
     "pred_track_a": resolve_data_path("narrative_nlp/G2_condition_predictions/Condition_G2_512_full_train_track_a.jsonl",
                                    "Condition_G2_512_full_train_track_a.jsonl"),
@@ -377,6 +378,8 @@ def load_test_b_rows():   return load_jsonl_file(DATA_PATHS["test_b"])
 def load_synth_rows():    return load_jsonl_file(DATA_PATHS["synth"])
 @st.cache_data
 def load_synth_new_rows(): return load_jsonl_file(DATA_PATHS["synth_new"])
+@st.cache_data
+def load_tell_me_again_rows(): return load_jsonl_file(DATA_PATHS["tell_me_again"])
 @st.cache_data
 def load_dev_labels():    return load_jsonl_file(DATA_PATHS["dev_labels"])
 @st.cache_data
@@ -454,17 +457,18 @@ DF_INPUT_LENGTH = pd.DataFrame([
 ], columns=["max_len", "Track A Acc.", "Track A F1", "Track B Acc.", "Track B F1"])
 
 DF_SYNTHETIC_EFFECT = pd.DataFrame([
-    ["Baseline", "Organiser only",   512, 66.25, 66.17, 69.25, 69.23],
-    ["Baseline", "Organiser + extra",512, 64.50, 64.46, 61.00, 61.00],
-    ["G2",       "Organiser only",   512, 70.00, 69.98, 64.75, 64.70],
-    ["G2",       "Organiser + extra",512, 69.00, 69.00, 71.75, 71.72],
+    ["Baseline", "Organiser only",                    512, 66.25, 66.17, 69.25, 69.23],
+    ["Baseline", "Organiser + extra synthetic",       512, 64.50, 64.46, 61.00, 61.00],
+    ["Baseline", "Organiser + extra (Tell-Me-Again!)", 512, 68.50, 68.46, 64.75, 64.71],
+    ["G2",       "Organiser only",                    512, 70.00, 69.98, 64.75, 64.70],
+    ["G2",       "Organiser + extra synthetic",       512, 69.00, 69.00, 71.75, 71.72],
+    ["G2",       "Organiser + extra (Tell-Me-Again!)", 512, 64.00, 64.00, 63.75, 63.73],
 ], columns=["Model", "Synthetic data", "max_len", "Track A Acc.", "Track A F1", "Track B Acc.", "Track B F1"])
 
 DF_BEST_MODELS = pd.DataFrame([
     ["Baseline (best Track A)", 128, "Organiser only",   68.25, 68.23, 62.25, 62.21],
     ["Baseline (best Track B)", 512, "Organiser only",   66.25, 66.17, 69.25, 69.23],
-    ["G2 (best overall)",       512, "Organiser + extra",69.00, 69.00, 71.75, 71.72],
-    ["Ensemble (G2 + Qwen)",    512, "Organiser + extra","-",   "-",   72.00, 71.98],
+    ["G2 (best overall)",       512, "Organiser + extra synthetic",69.00, 69.00, 71.75, 71.72],
 ], columns=["Model", "max_len", "Synthetic data", "Track A Acc.", "Track A F1", "Track B Acc.", "Track B F1"])
 
 DF_ASPECTS_PERF = pd.DataFrame([
@@ -572,7 +576,7 @@ with st.sidebar:
 <hr>
 <div style="font-family: JetBrains Mono, monospace; font-size: 0.6rem; color: #3a5a7a; line-height: 1.7;">
   RQ1 · Input length<br>
-  RQ2 · Latent heads (G2)<br>
+  RQ2 · Latent heads<br>
   RQ3 · Explicit aspects<br>
   RQ4 · Synthetic data<br>
   RQ5 · Multilingual transfer<br>
@@ -642,7 +646,7 @@ while explicit narrative aspects remain valuable for interpretability and error 
         ("RQ3", "Do explicit narrative aspects improve predictive accuracy, or are they mainly useful for interpretation?",
          "Mainly for interpretation. The best aspect-aware variant (Condition N) reaches 70.00% Track B, still 1.75pp behind G2. Theme extraction is especially noisy."),
         ("RQ4", "What is the effect of additional synthetic data on narrative similarity models?",
-         "It harms the baseline (Track B: 69.25%→61.00%) but substantially helps G2 (64.75%→71.75%). Latent heads regularise the model against diverse synthetic examples."),
+         "It harms the baseline (Track B: 69.25%→61.00%) but substantially helps G2 (64.75%→71.75%). Latent heads regularise the model against diverse synthetic examples. Adding Tell-Me-Again!-derived triples instead gives a mixed picture: it helps the baseline's Track A (66.25%→68.50%) but hurts Track B for both the baseline and G2."),
         ("RQ5", "How does the approach behave when translated into Romanian via machine translation?",
          "Performance drops 3-5pp. multilingual-e5-base is more robust (68.25% EN → 63.50% RO). The experiment confirms viability but highlights sensitivity to translation noise."),
         ("RQ6", "How can an interactive application support dataset exploration, aspect inspection, and result visualisation?",
@@ -663,7 +667,7 @@ while explicit narrative aspects remain valuable for interpretability and error 
         ("Input length ablation", "Systematic evaluation at 128 / 256 / 384 / 512 tokens revealing the asymmetric sensitivity of Track A and Track B."),
         ("G2 latent-head architecture", "Two generic 256-dim projection heads over the full-text encoder, trained with a head triplet loss regulariser (weight 0.3)."),
         ("Three-version aspect extraction pipeline", "Verbose prose (V1), structured role-label (V2), and compact phrase (V3) variants, with a quantitative informativeness analysis."),
-        ("Synthetic data experiments", "LLM-generated additional triplets that harm the baseline but substantially benefit the G2 model via latent regularisation."),
+        ("Synthetic data experiments", "LLM-generated additional triplets that harm the baseline but substantially benefit the G2 model via latent regularisation. A second auxiliary source, derived from the Tell-Me-Again! multi-summary dataset, interacts differently with each architecture (see §5.3.1)."),
         ("English-Romanian multilingual comparison", "NLLB-200 machine-translated dataset evaluated with two multilingual encoders (E5 and MPNet) in a controlled within-model comparison."),
         ("Embedding ensemble for Track B", "Task-tuned G2 embeddings combined with zero-shot Qwen3-Embedding-0.6B (0.90/0.10 weight), achieving 72.00% Track B accuracy."),
         ("Interactive Streamlit application", "This application - supporting live extraction, EDA, and result visualisation."),
@@ -704,6 +708,7 @@ elif page == "Dataset & EDA":
     test_b = load_test_b_rows()
     synth  = load_synth_rows()
     synth_new = load_synth_new_rows()
+    tell_me_again = load_tell_me_again_rows()
     ta_labels  = load_test_a_labels()
     tb_labels  = load_test_b_labels()
 
@@ -724,6 +729,7 @@ elif page == "Dataset & EDA":
     tb_texts   = [r.get("text","") for r in test_b if r.get("text","")]
     syn_texts  = get_texts_from_triples(synth)
     synn_texts = get_texts_from_triples(synth_new)
+    tma_texts  = get_texts_from_triples(tell_me_again)
 
     # ── Overview metrics ──
     st.markdown("### Corpus Overview")
@@ -739,7 +745,7 @@ elif page == "Dataset & EDA":
     m(m2, n_unique_dev, "Unique dev stories")
     m(m3, len(test_a), "Test-A triples")
     m(m4, len(test_b), "Test-B stories")
-    m(m5, len(synth)+len(synth_new), "Synth. triples (total)")
+    m(m5, len(synth)+len(synth_new)+len(tell_me_again), "Synth./aux. triples (total)")
 
     st.markdown("---")
 
@@ -769,9 +775,10 @@ elif page == "Dataset & EDA":
         row_stats("Test set (Track B)", tb_texts, tb_labels),
         row_stats("Organiser synthetic", syn_texts, synth),
         row_stats("Additional synthetic", synn_texts, synth_new),
+        row_stats("Additional from Tell-Me-Again!", tma_texts, tell_me_again),
     ])
-    st.dataframe(summary_df, hide_index=True, use_container_width=True)
-    st.markdown("<div class='baseline-note'>Additional synthetic stories are ~30 words longer on average, generated by llama3.1:8b following organiser-style prompts. No text overlap between the two sources.</div>", unsafe_allow_html=True)
+    st.dataframe(summary_df, hide_index=True, width='stretch')
+    st.markdown("<div class='baseline-note'>Additional synthetic stories are ~30 words longer on average than the organiser-provided synthetic data, generated by llama3.1:8b following organiser-style prompts. The Tell-Me-Again!-derived triples instead pair multiple human-written summaries of the same underlying story (positive) against a summary of a different story (negative); they are on average ~22 words shorter than the organiser synthetic data and ~52 words shorter than the additional generated synthetic data, with no text overlap between any of the three sources.</div>", unsafe_allow_html=True)
 
     st.markdown("---")
 
@@ -788,7 +795,7 @@ elif page == "Dataset & EDA":
         ["Track A test",         848,  155.12, 148.0, 626, 61.91,  6.01, 0.47, 0.12],
         ["Track B test",         849,  154.06, 149.0, 436, 64.19,  5.54, 0.47, 0.00],
     ], columns=["Dataset", "Unique texts", "Mean tokens", "Median tokens", "Max tokens", ">128 (%)", ">256 (%)", ">384 (%)", ">512 (%)"])
-    st.dataframe(tok_df, hide_index=True, use_container_width=True)
+    st.dataframe(tok_df, hide_index=True, width='stretch')
 
     c_left, c_right = st.columns(2)
     with c_left:
@@ -796,7 +803,7 @@ elif page == "Dataset & EDA":
             "max_len": [128, 256, 384, 512],
             "Organiser synthetic": [93.06, 3.58, 0.00, 0.00],
             "Additional synthetic": [100.00, 9.75, 0.00, 0.00],
-            "Add. from Tell-Me-Again!": [100.00, 9.75, 0.00, 0.00],
+            "Add. from Tell-Me-Again!": [57.71, 18.18, 0.96, 0.00],
             "Development set": [64.30, 6.89, 0.42, 0.00],
             "Track A test": [61.91, 6.01, 0.47, 0.12],
             "Track B test": [64.19, 5.54, 0.47, 0.00],
@@ -807,7 +814,7 @@ elif page == "Dataset & EDA":
                       color_discrete_sequence=PALETTE_A)
         fig = navy_fig(fig)
         fig.update_xaxes(title="Max sequence length (tokens)")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
     with c_right:
         ret_df = pd.DataFrame({
@@ -826,16 +833,16 @@ elif page == "Dataset & EDA":
         fig2 = navy_fig(fig2)
         fig2.update_xaxes(title="Max sequence length (tokens)")
         fig2.update_yaxes(range=[0.5, 1.02])
-        st.plotly_chart(fig2, use_container_width=True)
+        st.plotly_chart(fig2, width='stretch')
 
-    st.markdown("<div class='baseline-note'>128 tokens removes too much context (especially synthetic stories). 384-512 tokens retain nearly all narrative information - motivating the input-length ablation in §5.2.</div>", unsafe_allow_html=True)
+    st.markdown("<div class='baseline-note'>128 tokens removes too much context (especially synthetic stories, and to a lesser extent the Tell-Me-Again! triples). 384-512 tokens retain nearly all narrative information - motivating the input-length ablation in §5.2.</div>", unsafe_allow_html=True)
 
     st.markdown("---")
 
     # ── Word-length distributions ──
     st.markdown("### Word-Length Distributions by Dataset")
     dist_data = []
-    for texts, name in [(dev_texts, "Dev"), (ta_texts, "Test A"), (tb_texts, "Test B"), (syn_texts, "Synth Org."), (synn_texts, "Synth Add.")]:
+    for texts, name in [(dev_texts, "Dev"), (ta_texts, "Test A"), (tb_texts, "Test B"), (syn_texts, "Synth Org."), (synn_texts, "Synth Add."), (tma_texts, "Tell-Me-Again!")]:
         for t in texts:
             dist_data.append({"Dataset": name, "Words": word_count(t)})
     dist_df = pd.DataFrame(dist_data)
@@ -843,63 +850,12 @@ elif page == "Dataset & EDA":
     fig3 = px.box(dist_df, x="Dataset", y="Words",
                   title="Word-count distribution by dataset",
                   color="Dataset", color_discrete_sequence=PALETTE_A,
-                  category_orders={"Dataset": ["Dev","Test A","Test B","Synth Org.","Synth Add."]})
+                  category_orders={"Dataset": ["Dev","Test A","Test B","Synth Org.","Synth Add.","Tell-Me-Again!"]})
     fig3.update_layout(showlegend=False)
     navy_fig(fig3, height=360)
-    st.plotly_chart(fig3, use_container_width=True)
+    st.plotly_chart(fig3, width='stretch')
 
     st.markdown("---")
-
-    # ── Dev set label analysis ──
-    st.markdown("### Development Set Annotation Analysis")
-    label_df = build_dev_label_analysis()
-    if not label_df.empty:
-        coa_a   = (label_df["coa_match_a"] == label_df["coa_match_b"]).sum()/len(label_df)*100
-        out_a   = (label_df["outcomes_match_a"] == label_df["outcomes_match_b"]).sum()/len(label_df)*100
-        theme_a = (label_df["theme_match_a"] == label_df["theme_match_b"]).sum()/len(label_df)*100
-
-        lc1, lc2, lc3 = st.columns(3)
-        for col, v, lbl in [(lc1, coa_a,"CoA agreement"), (lc2, out_a,"Outcomes agreement"), (lc3, theme_a,"Theme agreement")]:
-            col.markdown(f"""<div class="metric-box">
-              <div class="metric-val" style="font-size:2rem;">{v:.1f}%</div>
-              <div class="metric-label">{lbl}<br>across candidates</div>
-            </div>""", unsafe_allow_html=True)
-
-        agree_df = pd.DataFrame({"Aspect": ["CoA","Outcomes","Theme"], "Agreement %": [coa_a, out_a, theme_a]})
-        coa_rate   = (label_df["coa_match_a"].sum()+label_df["coa_match_b"].sum()) / (len(label_df)*2) * 100
-        out_rate   = (label_df["outcomes_match_a"].sum()+label_df["outcomes_match_b"].sum()) / (len(label_df)*2) * 100
-        theme_rate = (label_df["theme_match_a"].sum()+label_df["theme_match_b"].sum()) / (len(label_df)*2) * 100
-        rate_df = pd.DataFrame({"Aspect": ["CoA","Outcomes","Theme"], "Match Rate %": [coa_rate, out_rate, theme_rate]})
-
-        ac1, ac2 = st.columns(2)
-        with ac1:
-            fig4 = px.bar(agree_df, x="Aspect", y="Agreement %", text="Agreement %", range_y=[0,100],
-                          title="Aspect label consistency (A vs B candidates)",
-                          color="Aspect", color_discrete_map={"CoA":"#2a5f72","Outcomes":"#3d6b58","Theme":"#6b4a7a"})
-            fig4.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
-            navy_fig(fig4)
-            st.plotly_chart(fig4, use_container_width=True)
-        with ac2:
-            fig5 = px.bar(rate_df, x="Aspect", y="Match Rate %", text="Match Rate %", range_y=[0,100],
-                          title="Aspect match rate (overall)",
-                          color="Aspect", color_discrete_map={"CoA":"#2a5f72","Outcomes":"#3d6b58","Theme":"#6b4a7a"})
-            fig5.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
-            navy_fig(fig5)
-            st.plotly_chart(fig5, use_container_width=True)
-        st.markdown("<div class='baseline-note'>Agreement = both candidates share the same aspect label. Match rate = frequency a candidate is labelled as matching the anchor for that aspect.</div>", unsafe_allow_html=True)
-    else:
-        st.info("Dev label file not found.")
-
-    st.markdown("---")
-
-    # # ── Synthetic LLMs ──
-    # st.markdown("### Organiser vs. Additional Data")
-    # cmp_df = pd.DataFrame([
-    #     ["Organiser synthetic", 1900, 5691, 157.85, 158.0, 49.63],
-    #     ["Additional synthetic", 1097, 3291, 187.50, 186.0, 49.68],
-    # ], columns=["Source","Rows","Unique texts","Mean words","Median words","text_a closer (%)"])
-    # st.dataframe(cmp_df, hide_index=True, use_container_width=True)
-    # st.markdown("<div class='baseline-note'>Additional synthetic stories are ~30 words longer on average, generated by llama3.1:8b following organiser-style prompts. No text overlap between the two sources.</div>", unsafe_allow_html=True)
 
     synth_model_df = build_synth_model_stats()
     if not synth_model_df.empty:
@@ -909,7 +865,7 @@ elif page == "Dataset & EDA":
                       color="Stories Generated", color_continuous_scale=["#deedf2","#0f1e35"])
         fig6.update_layout(showlegend=False, coloraxis_showscale=False)
         navy_fig(fig6, height=260)
-        st.plotly_chart(fig6, use_container_width=True)
+        st.plotly_chart(fig6, width='stretch')
 
 # ======================== PAGE: Aspect Extraction Versions ========================
 elif page == "Aspect Extraction Versions":
@@ -945,13 +901,13 @@ elif page == "Aspect Extraction Versions":
     st.markdown("---")
 
     # ── Aspect length analysis ──
-    st.markdown("### Table 3.9 · Mean Word Length of Extracted Aspects")
+    st.markdown("### Mean Word Length of Extracted Aspects")
     len_df = pd.DataFrame([
         ["V1 - verbose prose",      65.03, 50.60, 55.59],
         ["V2 - structured role-label", 56.29, 24.89, 7.30],
         ["V3 - compact constrained",   17.51, 10.71, 7.39],
     ], columns=["Version", "CoA (words)", "Outcomes (words)", "Theme (words)"])
-    st.dataframe(len_df, hide_index=True, use_container_width=True)
+    st.dataframe(len_df, hide_index=True, width='stretch')
 
     len_melted = pd.DataFrame([
         {"Version": "V1", "Aspect": "CoA",      "Mean words": 65.03},
@@ -968,7 +924,7 @@ elif page == "Aspect Extraction Versions":
                  title="Mean word length per aspect and extraction version",
                  color_discrete_map={"CoA":"#2a5f72","Outcomes":"#3d6b58","Theme":"#6b4a7a"})
     navy_fig(fig, height=340)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
     st.markdown("<div class='baseline-note'>A shorter representation is easier to inspect but does not guarantee stronger similarity signal. V3 compactness comes at the cost of discriminative power.</div>", unsafe_allow_html=True)
 
     st.markdown("---")
@@ -1034,10 +990,10 @@ Statistical significance assessed via paired *t*-test (α = 0.05).
 """)
 
     st.markdown("### Aspect Informativeness - RoBERTa-large, 200 dev triples")
-    st.dataframe(DF_ROBERTA_200, hide_index=True, use_container_width=True)
+    st.dataframe(DF_ROBERTA_200, hide_index=True, width='stretch')
 
     st.markdown("### Aspect Informativeness - BGE-M3, 200 dev triples")
-    st.dataframe(DF_BGEM3_200, hide_index=True, use_container_width=True)
+    st.dataframe(DF_BGEM3_200, hide_index=True, width='stretch')
 
     st.markdown("*Notes: Sig. ✓ = p < 0.05 (paired t-test). Values above 57.5 exceed full-text baseline.*")
 
@@ -1057,7 +1013,7 @@ Statistical significance assessed via paired *t*-test (α = 0.05).
         fig.add_hline(y=57.5, line_dash="dash", line_color="#c23b2a", annotation_text="Full-text baseline (57.5%)")
         fig.add_hline(y=50.0, line_dash="dot",  line_color="#8a9db0", annotation_text="Chance (50%)")
         navy_fig(fig)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
     bge_fig_data = []
     for _, row in DF_BGEM3_200.iterrows():
@@ -1070,19 +1026,19 @@ Statistical significance assessed via paired *t*-test (α = 0.05).
         fig2.add_hline(y=60.5, line_dash="dash", line_color="#c23b2a", annotation_text="Full-text baseline (60.5%)")
         fig2.add_hline(y=50.0, line_dash="dot",  line_color="#8a9db0", annotation_text="Chance (50%)")
         navy_fig(fig2)
-        st.plotly_chart(fig2, use_container_width=True)
+        st.plotly_chart(fig2, width='stretch')
 
     st.markdown("---")
 
     st.markdown("### Aspect Informativeness - 166 Clean Triples with Gold Aspect Labels")
-    st.dataframe(DF_166_GOLD, hide_index=True, use_container_width=True)
+    st.dataframe(DF_166_GOLD, hide_index=True, width='stretch')
     st.markdown("*Significance: ** p < 0.01, * p < 0.05. Only aspects with gold matching labels included.*")
 
     st.markdown("---")
 
     st.markdown("### Complementarity Analysis - Aspect-to-Full-Text Correlations")
     st.markdown("Low correlation with full text means the aspect captures *different* information - ideal for complementarity. Low mutual correlation (CoA-Outcomes) also desirable.")
-    st.dataframe(DF_CORRELATIONS, hide_index=True, use_container_width=True)
+    st.dataframe(DF_CORRELATIONS, hide_index=True, width='stretch')
 
     corr_fig = px.bar(DF_CORRELATIONS, x="Pair", y="r", color="Model", barmode="group",
                       title="Pearson r between aspect and full-text cosine similarities",
@@ -1091,7 +1047,7 @@ Statistical significance assessed via paired *t*-test (α = 0.05).
     corr_fig.update_traces(texttemplate="%{text:.3f}", textposition="outside")
     corr_fig.add_hline(y=0, line_color="#8a9db0", line_width=1)
     navy_fig(corr_fig, height=360)
-    st.plotly_chart(corr_fig, use_container_width=True)
+    st.plotly_chart(corr_fig, width='stretch')
     st.markdown("*Significance: *** p<0.001, ** p<0.01, * p<0.05, n.s. = not significant.*")
 
     st.markdown("---")
@@ -1117,7 +1073,7 @@ elif page == "Experimental Results":
         st.markdown("### RQ1 · Input Length Ablation (Full-Text Baseline)")
         st.markdown("Encoder: `sentence-transformers/all-roberta-large-v1`. No aspects, no latent heads. Only the tokenizer max length varies.")
 
-        st.dataframe(DF_INPUT_LENGTH, hide_index=True, use_container_width=True)
+        st.dataframe(DF_INPUT_LENGTH, hide_index=True, width='stretch')
 
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=DF_INPUT_LENGTH["max_len"], y=DF_INPUT_LENGTH["Track A Acc."],
@@ -1130,7 +1086,7 @@ elif page == "Experimental Results":
                           xaxis_title="Max sequence length (tokens)", yaxis_title="Accuracy (%)",
                           yaxis=dict(range=[58, 73]))
         navy_fig(fig, height=380)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
         st.markdown("""
 <div class="finding-box">
@@ -1151,40 +1107,36 @@ During Stage 1, heads receive a triplet loss signal: $\\mathcal{L}_{G2} = 0.7\\m
 For Track B, the final embedding is the concatenated L2-normalised vector: $e_{G2} = \\text{norm}([g; h_1; h_2])$.
         """)
 
-        st.markdown("#### Effect of Additional Synthetic Data")
-        st.dataframe(DF_SYNTHETIC_EFFECT, hide_index=True, use_container_width=True)
+        st.markdown("#### Effect of Additional Data")
+        st.markdown("Two auxiliary data sources were tested as additions to the 1,900 organiser-provided synthetic triples: 1,097 LLM-generated synthetic triples, and 1,200 triples derived from the Tell-Me-Again! multi-summary dataset (Section 3.2). Each is added independently to the organiser data (not combined with each other).")
+        st.dataframe(DF_SYNTHETIC_EFFECT, hide_index=True, width='stretch')
 
         synth_fig_data = []
         for _, row in DF_SYNTHETIC_EFFECT.iterrows():
             synth_fig_data.append({"Config": f"{row['Model']}\n({row['Synthetic data']})", "Model": row["Model"], "Synth": row["Synthetic data"],
                                     "Track A": row["Track A Acc."], "Track B": row["Track B Acc."]})
         sf_df = pd.DataFrame(synth_fig_data)
-        fig2a = go.Figure()
-        colors_map = {"Baseline": "#2a5f72", "G2": "#0f1e35"}
-        markers_map = {"Organiser only": "circle", "Organiser + extra": "diamond"}
-        for _, row in DF_SYNTHETIC_EFFECT.iterrows():
-            lbl = f"{row['Model']} · {row['Synthetic data']}"
-            fig2a.add_trace(go.Scatter(
-                x=["Track A", "Track B"], y=[row["Track A Acc."], row["Track B Acc."]],
-                name=lbl, mode="lines+markers",
-                line=dict(color=colors_map.get(row["Model"],"#6b4a7a"),
-                           dash="solid" if "only" in row["Synthetic data"] else "dash"),
-                marker=dict(size=10)))
-        fig2a.update_layout(title="Effect of Additional Synthetic Data on Baseline vs. G2", yaxis_title="Accuracy (%)", yaxis=dict(range=[58,74]))
-        navy_fig(fig2a, height=360)
-        st.plotly_chart(fig2a, use_container_width=True)
 
         st.markdown("""
 <div class="finding-box">
-<strong>Key observation:</strong> Extra synthetic data <em>harms</em> the baseline (Track B: 69.25%→61.00%)
+<strong>LLM-generated synthetic data:</strong> Extra synthetic data <em>harms</em> the baseline (Track B: 69.25%→61.00%)
 but substantially <em>helps</em> G2 (Track B: 64.75%→71.75%). The latent heads regularise the model,
 making it robust to longer and more diverse synthetic examples generated by a different LLM (llama3.1:8b).
+</div>
+<div class="finding-box">
+<strong>Tell-Me-Again! data:</strong> This source behaves differently from the LLM-generated synthetic data.
+It gives the baseline a mixed result - Track A improves (66.25%→68.50%) but Track B drops (69.25%→64.75%) - and it
+<em>hurts G2 on both tracks</em> (Track A: 70.00%→64.00%; Track B: 64.75%→63.75%). Unlike the organiser and LLM-generated
+triples, where the positive candidate is a genuinely different story, Tell-Me-Again! positive pairs are two summaries
+of the <em>same</em> underlying story. This appears to create a training signal that conflicts with G2's latent heads,
+which were otherwise shown to absorb stylistic variation well. For this reason, the LLM-generated synthetic data
+(not the Tell-Me-Again! data) is used as the additional contrastive source for the final G2 configuration below.
 </div>
 """, unsafe_allow_html=True)
 
         st.markdown("---")
         st.markdown("#### Final G2 Performance vs. Best Baseline")
-        st.dataframe(DF_BEST_MODELS, hide_index=True, use_container_width=True)
+        st.dataframe(DF_BEST_MODELS, hide_index=True, width='stretch')
 
         best_fig = go.Figure()
         for _, row in DF_BEST_MODELS.iterrows():
@@ -1198,21 +1150,22 @@ making it robust to longer and more diverse synthetic examples generated by a di
                                 yaxis_title="Score (%)", yaxis=dict(range=[60,76]),
                                 colorway=["#2a5f72","#0f1e35","#b8913a"])
         navy_fig(best_fig, height=360)
-        st.plotly_chart(best_fig, use_container_width=True)
+        st.plotly_chart(best_fig, width='stretch')
 
         st.markdown("""
 <div class="result-highlight">
   G2 achieves <strong>71.75% Track B accuracy</strong> (+2.5pp over best baseline) and
   <strong>69.00% Track A accuracy</strong> (+0.75pp). The largest gain is on Track B,
   confirming that generic latent heads learn task-relevant narrative subspaces especially
-  beneficial for standalone story embeddings.
+  beneficial for standalone story embeddings - when paired with the LLM-generated synthetic
+  augmentation rather than the Tell-Me-Again! auxiliary triples.
 </div>
 """, unsafe_allow_html=True)
 
     with tab3:
         st.markdown("### RQ3 · Explicit Aspect-Based Model Variants")
-        st.markdown("All variants use combined synthetic data and max_len=512 (except P* and P at 384 due to memory). Aspect choice: CoA from V1, Outcomes & Theme from V2.")
-        st.dataframe(DF_ASPECTS_PERF, hide_index=True, use_container_width=True)
+        st.markdown("All variants use combined synthetic data (organiser + LLM-generated extra) and max_len=512 (except P* and P at 384 due to memory). Aspect choice: CoA from V1, Outcomes & Theme from V2.")
+        st.dataframe(DF_ASPECTS_PERF, hide_index=True, width='stretch')
 
         asp_fig = px.scatter(DF_ASPECTS_PERF, x="Track A Acc.", y="Track B Acc.", text="Condition",
                               color="Condition", title="Aspect variant performance: Track A vs. Track B",
@@ -1222,7 +1175,7 @@ making it robust to longer and more diverse synthetic examples generated by a di
         asp_fig.add_hline(y=71.75, line_dash="dash", line_color="#c23b2a", annotation_text="G2 Track B")
         asp_fig.update_layout(showlegend=False, xaxis=dict(range=[58,73]), yaxis=dict(range=[57,75]))
         navy_fig(asp_fig, height=420)
-        st.plotly_chart(asp_fig, use_container_width=True)
+        st.plotly_chart(asp_fig, width='stretch')
 
         st.markdown("""
 <div class="finding-box">
@@ -1243,7 +1196,7 @@ diagnosis but do not improve predictive accuracy over latent representations.
 - **Qwen3-Embedding-0.6B** with All-but-the-Top post-processing (highest zero-shot Track B baseline)
 - **Weights:** (0.90 G2, 0.10 Qwen) - selected via grid search on dev set over {0.95/0.05, 0.90/0.10, 0.85/0.15, 0.80/0.20}
         """)
-        st.dataframe(DF_ENSEMBLE, hide_index=True, use_container_width=True)
+        st.dataframe(DF_ENSEMBLE, hide_index=True, width='stretch')
 
         ens_fig = px.bar(DF_ENSEMBLE, x="Model", y="Track B Acc. (%)", text="Track B Acc. (%)",
                           title="Track B accuracy: individual models and ensemble",
@@ -1251,7 +1204,7 @@ diagnosis but do not improve predictive accuracy over latent representations.
         ens_fig.update_traces(texttemplate="%{text:.2f}%", textposition="outside")
         ens_fig.update_layout(showlegend=False, yaxis=dict(range=[60,75]))
         navy_fig(ens_fig, height=320)
-        st.plotly_chart(ens_fig, use_container_width=True)
+        st.plotly_chart(ens_fig, width='stretch')
 
         st.markdown("""
 <div class="finding-box">
@@ -1277,15 +1230,15 @@ two generic latent heads) to isolate the effect of language change from encoder 
 """)
 
     st.markdown("### English vs. Romanian Machine-Translation Results")
-    st.dataframe(DF_MULTILINGUAL, hide_index=True, use_container_width=True)
+    st.dataframe(DF_MULTILINGUAL, hide_index=True, width='stretch')
 
     # Performance drop table
     drop_df = pd.DataFrame([
         ["multilingual-e5-base",                 -3.75, -3.78, -4.75, -4.79],
         ["paraphrase-multilingual-mpnet-base-v2", -3.00, -3.00, -4.00, -3.95],
     ], columns=["Model", "Track A Acc. drop", "Track A F1 drop", "Track B Acc. drop", "Track B F1 drop"])
-    st.markdown("### Table 5.8 · Performance Drop (English → Romanian MT)")
-    st.dataframe(drop_df, hide_index=True, use_container_width=True)
+    st.markdown("### Performance Drop (English → Romanian MT)")
+    st.dataframe(drop_df, hide_index=True, width='stretch')
 
     # Charts
     c1, c2 = st.columns(2)
@@ -1303,7 +1256,7 @@ two generic latent heads) to isolate the effect of language change from encoder 
                     opacity=1.0 if "English" in row["Language"] else 0.55))
         ml_fig.update_layout(barmode="group", title="Accuracy by track and language", yaxis_title="Accuracy (%)", yaxis=dict(range=[54,74]))
         navy_fig(ml_fig, height=360)
-        st.plotly_chart(ml_fig, use_container_width=True)
+        st.plotly_chart(ml_fig, width='stretch')
 
     with c2:
         drop_fig = go.Figure()
@@ -1320,7 +1273,7 @@ two generic latent heads) to isolate the effect of language change from encoder 
                                 yaxis_title="Δ accuracy (pp)", yaxis=dict(range=[-7,0]),
                                 colorway=["#0f1e35","#2a5f72"])
         navy_fig(drop_fig, height=360)
-        st.plotly_chart(drop_fig, use_container_width=True)
+        st.plotly_chart(drop_fig, width='stretch')
 
     st.markdown("""
 <div class="finding-box">
@@ -1352,7 +1305,7 @@ This experiment is a <em>robustness study under machine translation</em>, not ev
             ["Mean RO/EN word ratio", "0.940"],
             ["Flagged translations", "58 (0.49%)"],
         ], columns=["Parameter", "Value"])
-        st.dataframe(tr_stats, hide_index=True, use_container_width=True)
+        st.dataframe(tr_stats, hide_index=True, width='stretch')
     with tr_col2:
         st.markdown("""
 <div class="card card-parchment">
@@ -1573,7 +1526,7 @@ elif page == "Translation Explorer":
             fig_flags.update_traces(textposition="outside")
             fig_flags.update_layout(showlegend=False)
             navy_fig(fig_flags, height=320)
-            st.plotly_chart(fig_flags, use_container_width=True)
+            st.plotly_chart(fig_flags, width='stretch')
 
         with fcol2:
             ratios = [ex.get("length_ratio", 0) for ex in flagged_examples]
@@ -1585,7 +1538,7 @@ elif page == "Translation Explorer":
                 fig_ratio.add_vline(x=0.6, line_dash="dash", line_color="#c23b2a",
                                     annotation_text="too-short threshold (0.6)")
                 navy_fig(fig_ratio, height=320)
-                st.plotly_chart(fig_ratio, use_container_width=True)
+                st.plotly_chart(fig_ratio, width='stretch')
 
         st.markdown(f"""<div class='baseline-note'>
         Across the full 11,775-entry cache, the length-ratio (target words ÷ source words) ranges from
@@ -1841,36 +1794,31 @@ elif page == "Prediction Explorer":
         has_gold   = any(r["gold_a_closer"]  is not None for r in all_rows)
         has_aspects = bool(asp_v3)
 
-        col_s1, col_s2, col_s3 = st.columns(3)
-        with col_s1:
+        # Create two columns: left for plot, right for metrics stacked
+        left_col, right_col = st.columns([2, 1])
+        
+        with right_col:
+            # Metric 1: Number of triplets
             if not all_rows:
                 st.warning(f"Test triplets not found at:\n`{TEST_A_PATH}`")
             else:
+                st.markdown("<br>", unsafe_allow_html=True) 
                 st.markdown(f"""<div class="metric-box">
-                  <div class="metric-val" style="font-size:1.9rem;">{len(all_rows)}</div>
-                  <div class="metric-label">Track A test triplets</div>
+                <div class="metric-val" style="font-size:1.9rem;">{len(all_rows)}</div>
+                <div class="metric-label">Track A test triplets</div>
                 </div>""", unsafe_allow_html=True)
-        with col_s2:
+            
+            # Metric 2: Accuracy (with some spacing)
+            st.markdown("<br>", unsafe_allow_html=True)  # Adds vertical spacing
+            
             if not has_preds:
                 st.warning(f"G2 predictions not found at:\n`{PRED_A_PATH}`")
             else:
                 n_correct = sum(1 for r in all_rows if r["correct"] is True)
                 acc = n_correct / len(all_rows) * 100 if all_rows else 0
                 st.markdown(f"""<div class="metric-box">
-                  <div class="metric-val" style="font-size:1.9rem;">{acc:.1f}%</div>
-                  <div class="metric-label">G2 Track A accuracy<br>({n_correct}/{len(all_rows)} correct)</div>
-                </div>""", unsafe_allow_html=True)
-        with col_s3:
-            if not has_aspects:
-                st.markdown(f"""<div class="card card-accent-gold" style="font-size:0.82rem; line-height:1.6;">
-                  <strong>V3 aspects not loaded.</strong><br>
-                  Expected: <code>aspects_cache_v3.json</code><br>
-                  Aspect columns will show "—".
-                </div>""", unsafe_allow_html=True)
-            else:
-                st.markdown(f"""<div class="metric-box">
-                  <div class="metric-val" style="font-size:1.9rem;">{len(asp_v3):,}</div>
-                  <div class="metric-label">Stories in V3 aspect cache</div>
+                <div class="metric-val" style="font-size:1.9rem;">{acc:.1f}%</div>
+                <div class="metric-label">G2 Track A accuracy<br>({n_correct}/{len(all_rows)} correct)</div>
                 </div>""", unsafe_allow_html=True)
 
         if not all_rows:
@@ -1878,12 +1826,13 @@ elif page == "Prediction Explorer":
 
         st.markdown("---")
 
-        if has_preds and has_gold:
-            n_correct = sum(1 for r in all_rows if r["correct"] is True)
-            n_wrong   = sum(1 for r in all_rows if r["correct"] is False)
-            n_unknown = sum(1 for r in all_rows if r["correct"] is None)
-            ch1, ch2 = st.columns(2)
-            with ch1:
+        # Plot on the left
+        with left_col:
+            if has_preds and has_gold:
+                n_correct = sum(1 for r in all_rows if r["correct"] is True)
+                n_wrong   = sum(1 for r in all_rows if r["correct"] is False)
+                n_unknown = sum(1 for r in all_rows if r["correct"] is None)
+                
                 breakdown_df = pd.DataFrame({"Outcome": ["Correct","Wrong","No label"], "Count": [n_correct, n_wrong, n_unknown]})
                 fig_bd = px.bar(breakdown_df, x="Outcome", y="Count", text="Count",
                                 title="G2 prediction outcomes (Track A test set)",
@@ -1891,24 +1840,9 @@ elif page == "Prediction Explorer":
                                 color_discrete_map={"Correct":"#3d6b58","Wrong":"#c23b2a","No label":"#8a9db0"})
                 fig_bd.update_traces(textposition="outside")
                 fig_bd.update_layout(showlegend=False)
-                navy_fig(fig_bd, height=300)
-                st.plotly_chart(fig_bd, use_container_width=True)
-            with ch2:
-                gold_a = sum(1 for r in all_rows if r["gold_a_closer"] is True)
-                gold_b = sum(1 for r in all_rows if r["gold_a_closer"] is False)
-                pred_a = sum(1 for r in all_rows if r["pred_a_closer"] is True)
-                pred_b = sum(1 for r in all_rows if r["pred_a_closer"] is False)
-                dist_df = pd.DataFrame({
-                    "Source": ["Gold","Gold","G2 pred.","G2 pred."],
-                    "Label": ["text_a closer","text_b closer","text_a closer","text_b closer"],
-                    "Count": [gold_a, gold_b, pred_a, pred_b],
-                })
-                fig_dist = px.bar(dist_df, x="Source", y="Count", color="Label", barmode="group", text="Count",
-                                  title="Gold vs. predicted label distribution",
-                                  color_discrete_map={"text_a closer":"#2a5f72","text_b closer":"#b8913a"})
-                fig_dist.update_traces(textposition="outside")
-                navy_fig(fig_dist, height=300)
-                st.plotly_chart(fig_dist, use_container_width=True)
+                navy_fig(fig_bd, height=320)
+                st.plotly_chart(fig_bd, width='stretch')
+
 
         st.markdown("---")
         st.markdown("#### Filter and search")
@@ -2039,8 +1973,8 @@ elif page == "Prediction Explorer":
                                 color_discrete_map={"Correct":"#3d6b58","Wrong":"#c23b2a","No emb.":"#8a9db0"})
                 fig_bd.update_traces(textposition="outside")
                 fig_bd.update_layout(showlegend=False)
-                navy_fig(fig_bd, height=300)
-                st.plotly_chart(fig_bd, use_container_width=True)
+                navy_fig(fig_bd, height=320)
+                st.plotly_chart(fig_bd, width='stretch')
 
             with ch2:
                 gap_data = [{"gap": r["sim_a"] - r["sim_b"], "correct": "Correct" if r["correct"] else "Wrong"}
@@ -2053,7 +1987,7 @@ elif page == "Prediction Explorer":
                 fig_gap.add_vline(x=0, line_dash="dash", line_color="#0f1e35",
                                   annotation_text="decision boundary")
                 navy_fig(fig_gap, height=300)
-                st.plotly_chart(fig_gap, use_container_width=True)
+                st.plotly_chart(fig_gap, width='stretch')
 
             st.markdown("<div class='baseline-note'>Cosine gap = sim(anchor, text_A) − sim(anchor, text_B). Positive → model predicts text_A is closer. Correct predictions cluster away from zero; wrong predictions often have a small gap, indicating near-ties where the model is uncertain.</div>", unsafe_allow_html=True)
             # ── Embedding Space Visualization ──
@@ -2165,7 +2099,7 @@ elif page == "Prediction Explorer":
                 fig_emb.update_xaxes(title="Component 1")
                 fig_emb.update_yaxes(title="Component 2")
                 navy_fig(fig_emb, height=480)
-                st.plotly_chart(fig_emb, use_container_width=True)
+                st.plotly_chart(fig_emb, width='stretch')
             else:
                 fig_emb = px.scatter_3d(
                     plot_df, x="x", y="y", z="z", color=viz_color_by,
@@ -2185,25 +2119,8 @@ elif page == "Prediction Explorer":
                     height=560, margin=dict(l=0, r=0, t=44, b=0),
                     title=dict(font=dict(family="EB Garamond, Georgia, serif", size=15, color="#0f1e35")),
                 )
-                st.plotly_chart(fig_emb, use_container_width=True)
+                st.plotly_chart(fig_emb, width='stretch')
 
-            if viz_method == "PCA" and var_explained is not None:
-                var_str = " + ".join(f"PC{i+1}: {v*100:.1f}%" for i, v in enumerate(var_explained))
-                st.markdown(
-                    f"<div class='baseline-note'>Variance explained — {var_str} "
-                    f"(total: {var_explained.sum()*100:.1f}%). PCA is linear and deterministic; "
-                    f"low explained variance means the embedding space is not well captured by a "
-                    f"{n_comp}D linear projection, so cluster structure here is only a rough hint.</div>",
-                    unsafe_allow_html=True
-                )
-            else:
-                st.markdown(
-                    "<div class='baseline-note'>t-SNE is non-linear and stochastic (fixed seed for "
-                    "reproducibility here); distances between distant clusters are not meaningful, "
-                    "only local neighbourhood structure. Sampled when the story count exceeds 600 "
-                    "for responsiveness.</div>",
-                    unsafe_allow_html=True
-                )
             st.markdown("---")
 
         # ── Filters ──
@@ -2302,87 +2219,509 @@ elif page == "Live Aspect Extraction":
     DEFAULT_MODEL = os.getenv("OLLAMA_MODEL","llama3.1:8b")
     ASPECT_KEYS = ("coa","outcomes","theme")
 
-    # ── Prompts──
+    # ── Prompts ──
     V1_PROMPTS = {
-        "coa": """You are a narrative analyst. Read the story summary below and write ONLY the sequence of plot events - what happens, in what order, and what causes what. Do NOT mention character names, specific locations, or themes. Do NOT write any introduction, heading, or label before your answer. Begin your response immediately with the first event. Write 2-4 sentences.\n\nStory:\n{story}\n\nResponse:""",
-        "outcomes": """You are a narrative analyst. Read the story summary below and write ONLY the final outcome and resolution. What is the end state? What did the protagonist ultimately achieve, lose, or experience? Do NOT describe how they got there. Do NOT write any introduction, heading, or label. Begin your response immediately with the outcome. Write 1-2 sentences.\n\nStory:\n{story}\n\nResponse:""",
-        "theme": """You are a narrative analyst. Read the story summary below and write ONLY the abstract themes and universal human experiences it explores. What fundamental aspects of human nature, society, or morality does it examine? Do NOT mention specific characters, places, or plot events. Do NOT write any introduction, heading, or label. Begin your response immediately with the theme. Write 1-3 sentences.\n\nStory:\n{story}\n\nResponse:""",
+        "coa": """You are a narrative analyst. Read the story summary below and write ONLY the sequence of plot events - what happens, in what order, and what causes what. Do NOT mention character names, specific locations, or themes. Do NOT write any introduction, heading, or label before your answer. Begin your response immediately with the first event. Write 2-4 sentences.
+
+Story:
+{story}
+
+Response:""",
+        "outcomes": """You are a narrative analyst. Read the story summary below and write ONLY the final outcome and resolution. What is the end state? What did the protagonist ultimately achieve, lose, or experience? Do NOT describe how they got there. Do NOT write any introduction, heading, or label. Begin your response immediately with the outcome. Write 1-2 sentences.
+
+Story:
+{story}
+
+Response:""",
+        "theme": """You are a narrative analyst. Read the story summary below and write ONLY the abstract themes and universal human experiences it explores. What fundamental aspects of human nature, society, or morality does it examine? Do NOT mention specific characters, places, or plot events. Do NOT write any introduction, heading, or label. Begin your response immediately with the theme. Write 1-3 sentences.
+
+Story:
+{story}
+
+Response:""",
     }
 
-    V2_SYS = ("You are a precise narrative analyst specialising in story structure. You follow instructions exactly. You always output valid JSON with no markdown fences, no extra keys, and no text outside the JSON object.")
-    V2_PROMPT = """Analyse the story and extract three narrative aspects. Return ONLY valid JSON with keys: "coa", "outcomes", "theme". No extra text.\n\nCOA: 3-6 numbered steps, abstract action types, role labels.\nOUTCOMES: Exactly 2 sentences - final state + resolution label (conflict_resolved/unresolved/partial).\nTHEME: 2-4 short abstract phrases separated by semicolons.\n\nStory: {story}\n\nOutput:"""
+    # V2 System & Prompt
+    V2_SYS = ("You are a precise narrative analyst specialising in story structure. "
+              "You follow instructions exactly. "
+              "You always output valid JSON with no markdown fences, no extra keys, "
+              "and no text outside the JSON object. "
+              "You never invent events, outcomes, or successful resolutions that are not clearly supported by the story.")
 
-    V3_SYS = ("You are a precise narrative analyst. Follow instructions exactly. Output valid JSON only with keys coa, outcomes, theme.")
-    V3_PROMPT = """Analyse the story. Return ONLY valid JSON with keys "coa", "outcomes", "theme". No extra text.\n\nCOA: 3-5 short clauses separated by \" ; \". Use role labels (protagonist, antagonist, authority, ally). No character names.\nOUTCOMES: Exactly 2 cautious sentences about final state. Second sentence = one of: \"conflict resolved.\" / \"conflict unresolved.\" / \"conflict partially resolved.\"\nTHEME: 2-4 short lower-case phrases separated by semicolons.\n\nStory: {story}\n\nOutput:"""
+    V2_PROMPT = """Analyse the story summary and extract three narrative aspects.
+Return ONLY valid JSON with keys: "coa", "outcomes", "theme".
+No extra text.
 
-    PREAMBLE_RE = re.compile(r"^(?:here (?:is|are)(?: the| a)?[^\n:]{0,80}?[\s:.-]*\n+|(?:certainly|sure|of course|absolutely)[!,.]?[^\n]*\n*|(?:course of action|outcomes?|abstract theme|response|answer)\s*[:]\s*\n*)", re.IGNORECASE)
+━━━ CORE PRINCIPLE ━━━
+Each aspect must capture DIFFERENT information:
+- COA = process (what happens)
+- OUTCOMES = final state (what is true at the end)
+- THEME = abstract meaning (what it represents)
 
-    def fill(template, story): return template.replace("{story}", story.strip())
+Avoid overlap between them.
+
+━━━━━━━━━━━━━━━━━━━━━━━
+COA (Course of Action)
+━━━━━━━━━━━━━━━━━━━━━━━
+Describe the FULL causal sequence of events.
+
+REQUIREMENTS:
+- 3-6 numbered steps (1. 2. 3. ...)
+- MUST include the FINAL transition into resolution
+- Each step = one causal event
+- Use abstract action types (escape, betrayal, investigation, confrontation, sacrifice)
+
+USE:
+- role labels (protagonist, antagonist, authority, ally)
+- generic locations (city, prison, battlefield)
+
+FORBIDDEN:
+- character names
+- specific places
+- themes or emotions
+- vague verbs ("deals with", "goes through")
+
+GOOD:
+"protagonist investigates → discovers threat → confronts antagonist → resolves conflict"
+
+━━━━━━━━━━━━━━━━━━━━━━━
+OUTCOMES (STRICT FORMAT)
+━━━━━━━━━━━━━━━━━━━━━━━
+Describe ONLY the final stable state explicitly supported by the summary.
+
+Write EXACTLY 2 sentences:
+
+Sentence 1:
+- state the clearest end-state for the protagonist or central conflict
+- use cautious wording if the ending is unclear
+
+Sentence 2:
+- state exactly one resolution label:
+  - conflict resolved
+  - conflict unresolved
+  - conflict partially resolved
+
+CRITICAL:
+- Do NOT infer success, justice served, systemic change, broader implications, or future consequences unless clearly stated.
+- If the ending is unclear, say so explicitly.
+- Prefer literal wording over interpretation.
+
+FORBIDDEN:
+- "having..." clauses
+- process descriptions
+- vague words like "things improve"
+- phrases like "broader threats remain", "personal transformation", "systemic change", "justice served", "new hope" unless explicitly stated
+
+GOOD:
+"Protagonist escapes the immediate danger, but the broader situation remains uncertain. conflict partially resolved."
+
+━━━━━━━━━━━━━━━━━━━━━━━
+THEME (NORMALIZED)
+━━━━━━━━━━━━━━━━━━━━━━━
+Write 2-4 SHORT phrases (not full sentences).
+
+Each phrase must be:
+- abstract
+- generalizable across stories
+- 1-5 words long
+- lower-case concept phrase
+
+FORMAT:
+"theme1; theme2; theme3"
+
+GOOD:
+"survival under adversity; loyalty vs duty; human resilience"
+
+BAD:
+"The story explores how a man struggles..."
+
+━━━━━━━━━━━━━━━━━━━━━━━
+EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━
+
+Story:
+"A young man injures his brother, is placed under supervision, falsely accused, and later proven innocent."
+
+Output:
+{{
+  "coa": "1. Protagonist commits violence and is processed by authority.\n2. Authority imposes supervision and assigns a helper.\n3. Community falsely accuses protagonist, escalating conflict.\n4. Evidence emerges that clears protagonist and resolves accusations.",
+  "outcomes": "Protagonist is exonerated and allowed to move forward. conflict resolved.",
+  "theme": "redemption; social stigma; justice vs prejudice"
+}}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+NOW ANALYSE
+━━━━━━━━━━━━━━━━━━━━━━━
+
+Story: {story}
+
+Output:
+"""
+
+    # V3 System, Prompt, and Repair
+    V3_SYS = ("You are a precise narrative analyst. Follow instructions exactly. "
+              "Output valid JSON only with keys coa, outcomes, theme.")
+
+    V3_PROMPT = """Analyse the story. Return ONLY valid JSON with keys "coa", "outcomes", "theme". No extra text.
+
+━━━ CORE PRINCIPLE ━━━
+Each aspect must capture DIFFERENT information:
+- COA = process (what happens)
+- OUTCOMES = final state (what is true at the end)
+- THEME = abstract meaning (what it represents)
+
+Avoid overlap between them.
+
+━━━━━━━━━━━━━━━━━━━━━━━
+COA (Course of Action)
+━━━━━━━━━━━━━━━━━━━━━━━
+Describe the FULL causal sequence of events.
+
+REQUIREMENTS:
+- 3-5 short clauses separated by " ; "
+- MUST include the FINAL transition into resolution
+- Each clause = one causal event
+- Keep clauses short and structural, not long plot-summary prose
+- Do not use numbering, bullet points, or arrows
+- Use abstract action types (escape, betrayal, investigation, confrontation, sacrifice)
+
+USE:
+- role labels (protagonist, antagonist, authority, ally)
+- generic locations (city, prison, battlefield)
+
+FORBIDDEN:
+- character names
+- specific places
+- themes or emotions
+- vague verbs ("deals with", "goes through")
+
+GOOD:
+"protagonist investigates → discovers threat → confronts antagonist → resolves conflict"
+
+━━━━━━━━━━━━━━━━━━━━━━━
+OUTCOMES (STRICT FORMAT)
+━━━━━━━━━━━━━━━━━━━━━━━
+Describe ONLY the final stable state explicitly supported by the summary.
+
+Write EXACTLY 2 sentences:
+
+Sentence 1:
+- state the clearest end-state for the protagonist or central conflict
+- use cautious wording if the ending is unclear
+
+Sentence 2:
+- state exactly one resolution label:
+  - conflict resolved
+  - conflict unresolved
+  - conflict partially resolved
+
+CRITICAL:
+- Do NOT infer success, justice served, systemic change, broader implications, or future consequences unless clearly stated.
+- If the ending is unclear, say so explicitly.
+- Prefer literal wording over interpretation.
+
+FORBIDDEN:
+- "having..." clauses
+- process descriptions
+- vague words like "things improve"
+- phrases like "broader threats remain", "personal transformation", "systemic change", "justice served", "new hope" unless explicitly stated
+
+GOOD:
+"Protagonist escapes the immediate danger, but the broader situation remains uncertain. conflict partially resolved."
+
+━━━━━━━━━━━━━━━━━━━━━━━
+THEME (NORMALIZED)
+━━━━━━━━━━━━━━━━━━━━━━━
+Write 2-4 SHORT phrases (not full sentences).
+
+Each phrase must be:
+- abstract
+- generalizable across stories
+- 1-5 words long
+- lower-case concept phrase
+
+FORMAT:
+"theme1; theme2; theme3"
+
+GOOD:
+"survival under adversity; loyalty vs duty; human resilience"
+
+BAD:
+"The story explores how a man struggles..."
+
+━━━━━━━━━━━━━━━━━━━━━━━
+EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━
+
+Story:
+"A young man injures his brother, is placed under supervision, falsely accused, and later proven innocent."
+
+Output:
+{{
+  "coa": "protagonist commits violence; authority imposes supervision; community escalates accusations; evidence clears protagonist",
+  "outcomes": "Protagonist is exonerated and allowed to move forward. conflict resolved.",
+  "theme": "redemption; social stigma; justice vs prejudice"
+}}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+NOW ANALYSE
+━━━━━━━━━━━━━━━━━━━━━━━
+
+Story: {story}
+
+Output:
+"""
+
+    # V3 REPAIR PROMPT
+    REPAIR_PROMPT = """You are repairing a noisy narrative-aspect extraction.
+Return ONLY valid JSON with keys: "coa", "outcomes", "theme".
+
+Requirements:
+- remove character names and specific places
+- keep coa as 3-5 short structural clauses separated by " ; "
+- remove numbering, arrows, and bullet points from coa
+- keep outcomes as exactly 2 short cautious sentences about final state only
+- make the second outcomes sentence exactly one of: "conflict resolved." / "conflict unresolved." / "conflict partially resolved."
+- keep theme as 2-4 short lower-case phrases separated by semicolons
+- do not invent success, justice served, systemic change, broader implications, or details not clearly present in the story
+
+Story:
+{story}
+
+Current extraction:
+{bad_json}
+
+Return repaired JSON only.
+"""
+
+    # ── Validation thresholds ──
+    ASPECT_VALIDATORS = {
+        "coa": {"min_len": 80, "max_len": 700},
+        "outcomes": {"min_len": 35, "max_len": 220},
+        "theme": {"min_len": 12, "max_len": 120},
+    }
+
+    PREAMBLE_RE = re.compile(
+        r"^(?:"
+        r"here (?:is|are)(?: the| a)?[^\n:]{0,80}?[\s:.-]*\n+"
+        r"|"
+        r"(?:certainly|sure|of course|absolutely)[!,.]?[^\n]*\n*"
+        r"|"
+        r"(?:course of action|outcomes?|abstract theme|response|answer)\s*[:]\s*\n*"
+        r")",
+        re.IGNORECASE
+    )
+
+    def fill(template, story):
+        return template.replace("{story}", story.strip())
+
     def clean(text):
-        if not text: return ""
+        if not text:
+            return ""
         text = text.strip()
         for _ in range(4):
             c = PREAMBLE_RE.sub("", text).strip()
-            if c == text: break
+            if c == text:
+                break
             text = c
         return re.sub(r"\n{3,}", "\n\n", text).strip()
 
+    # ── V3 Post-processing functions ──
+    def _theme_parts(text):
+        return [
+            part.strip(" -.;,").lower()
+            for part in re.split(r"[;\n,]", text)
+            if part.strip(" -.;,")
+        ]
+
+    def postprocess_coa(text):
+        text = clean(text)
+        text = re.sub(r"\s*\n\s*", " ", text)
+        text = re.sub(r"(?m)^\s*(\d+)[.)]\s*", "", text)
+        text = re.sub(r"(?i)\bstep\s+\d+\s*[:.-]\s*", "", text)
+        text = re.sub(r"\s*(?:->|→)\s*", "; ", text)
+        text = re.sub(r"\s-\s", "; ", text)
+        text = re.sub(r"\s*;\s*", "; ", text)
+        text = re.sub(r"(?i)\b(protagonist|antagonist|authority|ally)\s*:\s*", r"\1 ", text)
+        text = re.sub(r"\s{2,}", " ", text)
+        return text.strip(" ;")
+
+    def postprocess_outcomes(text):
+        text = clean(text)
+        text = re.sub(r"\bresolved with partial resolution\b", "partially resolved", text, flags=re.IGNORECASE)
+        text = re.sub(r"\bconflict is resolved with unresolved\b", "conflict remains unresolved", text, flags=re.IGNORECASE)
+        text = re.sub(r"\bprotagonist succeeds in\b", "protagonist attempts to", text, flags=re.IGNORECASE)
+        text = re.sub(r"\bultimately (solves|resolves)\b", "ultimately addresses", text, flags=re.IGNORECASE)
+        text = re.sub(r"\bfully resolves\b", "largely resolves", text, flags=re.IGNORECASE)
+        text = re.sub(r"\b(personal transformation|systemic change|justice served|new hope|broader (threats|issues|relationships) remain)\b", "", text, flags=re.IGNORECASE)
+        text = re.sub(r"\s+", " ", text).strip()
+        return text
+
+    def postprocess_theme(text):
+        phrases = []
+        seen = set()
+        for part in _theme_parts(clean(text)):
+            part = re.sub(r"\b(the|a|an|story explores|themes? of)\b", "", part, flags=re.IGNORECASE)
+            part = re.sub(
+                r"\b(moral of the story|central theme|main theme)\b",
+                "",
+                part,
+                flags=re.IGNORECASE,
+            )
+            part = re.sub(r"\s+", " ", part).strip(" -.;,")
+            if part and len(part.split()) <= 5 and part not in seen:
+                seen.add(part)
+                phrases.append(part)
+        return "; ".join(phrases[:4])
+
+    # ── Validation functions (from v3 notebook) ──
+    def _aspect_issues(aspect_name, text):
+        """Return a list of issues if an extracted aspect looks malformed."""
+        v = ASPECT_VALIDATORS.get(aspect_name, {})
+        issues = []
+        if not v:
+            return issues
+        if len(text) < v.get("min_len", 0):
+            issues.append(f"too short ({len(text)} chars, min={v['min_len']})")
+        if len(text) > v.get("max_len", 9999):
+            issues.append(f"very long ({len(text)} chars) - may be over-generated")
+        if aspect_name == "coa":
+            if re.search(r"(^|[\\s;])\\d+[\\.\\)]", text):
+                issues.append("coa should not contain numbering")
+            if re.search(r"\\b(Mary Murphy|Antarctica|Earth|Sacramento)\\b", text):
+                issues.append("may contain specific names or places")
+            if "->" in text or "→" in text:
+                issues.append("coa should use semicolon-separated clauses, not arrows")
+        if aspect_name == "outcomes" and re.search(
+            r"\\b(succeeds in|ultimately solves|fully resolves|stabilizing markets?|justice served|systemic change|personal transformation|new hope|broader (threats|issues|relationships) remain)\\b",
+            text,
+            re.IGNORECASE,
+        ):
+            issues.append("may be overconfident or infer unsupported consequences")
+        if aspect_name == "outcomes":
+            sentences = [s.strip() for s in re.split(r"(?<=[.!?])\\s+", text) if s.strip()]
+            if len(sentences) != 2:
+                issues.append("outcomes should contain exactly 2 short sentences")
+            elif sentences[1].lower() not in {
+                "conflict resolved.",
+                "conflict unresolved.",
+                "conflict partially resolved.",
+            }:
+                issues.append("second outcomes sentence should be a plain resolution label")
+        if aspect_name == "theme":
+            parts = _theme_parts(text)
+            if len(parts) < 2:
+                issues.append("should contain 2-4 semicolon-separated themes")
+            if any(len(p.split()) > 5 for p in parts):
+                issues.append("theme phrases should be short")
+        return issues
+
+    def _needs_repair(aspects):
+        return any(_aspect_issues(name, aspects.get(name, "")) for name in ASPECT_KEYS)
+
+    def _validate_aspect(aspect_name, text, story_preview):
+        """Print a warning if an extracted aspect looks malformed."""
+        issues = _aspect_issues(aspect_name, text)
+        if issues:
+            st.warning(f"{aspect_name}: {'; '.join(issues)}")
+
     def call_ollama(host, model, prompt, max_tokens=500, json_mode=False, temperature=0.1):
-        payload = {"model": model, "prompt": prompt, "stream": False,
-                   "options": {"num_predict": max_tokens, "temperature": temperature, "top_p": 0.9, "repeat_penalty": 1.1}}
-        if json_mode: payload["format"] = "json"
-        req = urllib.request.Request(f"{host}/api/generate", data=json.dumps(payload).encode(), headers={"Content-Type":"application/json"}, method="POST")
+        payload = {
+            "model": model,
+            "prompt": prompt,
+            "stream": False,
+            "options": {
+                "num_predict": max_tokens,
+                "temperature": temperature,
+                "top_p": 0.9,
+                "repeat_penalty": 1.1,
+            }
+        }
+        if json_mode:
+            payload["format"] = "json"
+        req = urllib.request.Request(
+            f"{host}/api/generate",
+            data=json.dumps(payload).encode(),
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
         try:
             with urllib.request.urlopen(req, timeout=180) as r:
-                return json.loads(r.read().decode()).get("response","").strip()
+                return json.loads(r.read().decode()).get("response", "").strip()
         except urllib.error.URLError as e:
             raise RuntimeError(f"Cannot reach Ollama at {host}. Start with 'ollama serve'.") from e
 
     def parse_json(raw):
-        text = re.sub(r"^```(?:json)?\s*","",raw.strip(),flags=re.IGNORECASE)
-        text = re.sub(r"\s*```$","",text).strip()
+        text = re.sub(r"^```(?:json)?\s*", "", raw.strip(), flags=re.IGNORECASE)
+        text = re.sub(r"\s*```$", "", text).strip()
         try:
             obj = json.loads(text)
-            if isinstance(obj,dict) and all(k in obj for k in ASPECT_KEYS): return obj
-        except: pass
+            if isinstance(obj, dict) and all(k in obj for k in ASPECT_KEYS):
+                return obj
+        except:
+            pass
         recovered = {}
         for k in ASPECT_KEYS:
             m = re.search(rf'"{k}"\s*:\s*"((?:[^"\\]|\\.)*)"', text, re.DOTALL)
-            if m: recovered[k] = m.group(1).replace("\\n","\n").replace('\\"','"')
-        if len(recovered)==3: return recovered
+            if m:
+                recovered[k] = m.group(1).replace("\\n", "\n").replace('\\"', '"')
+        if len(recovered) == 3:
+            return recovered
         raise ValueError(f"Could not parse JSON. Raw: {raw[:300]}")
 
     def extract_v1(story, host, model):
         return {k: clean(call_ollama(host, model, fill(V1_PROMPTS[k], story), 220, False, 0.2)) for k in ASPECT_KEYS}
 
     def extract_v2(story, host, model):
-        raw = call_ollama(host, model, V2_SYS+"\n\n"+fill(V2_PROMPT,story), 500, True, 0.1)
+        raw = call_ollama(host, model, V2_SYS + "\n\n" + fill(V2_PROMPT, story), 500, True, 0.1)
         parsed = parse_json(raw)
-        return {k: clean(parsed.get(k,"")) for k in ASPECT_KEYS}
-
-    def postprocess_coa(text):
-        text = clean(text)
-        text = re.sub(r"\s*\n\s*"," ",text)
-        text = re.sub(r"(?m)^\s*(\d+)[.)]\s*","",text)
-        text = re.sub(r"(?i)\bstep\s+\d+\s*[:.-]\s*","",text)
-        text = text.replace("\u2192","; ")
-        text = re.sub(r"\s*(?:->)\s*","; ",text)
-        text = re.sub(r"\s-\s","; ",text)
-        text = re.sub(r"\s*;\s*","; ",text)
-        return re.sub(r"\s{2,}"," ",text).strip(" ;")
+        return {k: clean(parsed.get(k, "")) for k in ASPECT_KEYS}
 
     def extract_v3(story, host, model):
-        raw = call_ollama(host, model, V3_SYS+"\n\n"+fill(V3_PROMPT,story), 500, True, 0.0)
+        """V3 extraction with repair mechanism from the v3 notebook."""
+        # Step 1: Initial extraction
+        raw = call_ollama(host, model, V3_SYS + "\n\n" + fill(V3_PROMPT, story), 500, True, 0.0)
         parsed = parse_json(raw)
-        return {"coa": postprocess_coa(parsed.get("coa","")), "outcomes": clean(parsed.get("outcomes","")), "theme": clean(parsed.get("theme",""))}
+        
+        aspects = {
+            "coa": postprocess_coa(parsed.get("coa", "")),
+            "outcomes": postprocess_outcomes(parsed.get("outcomes", "")),
+            "theme": postprocess_theme(parsed.get("theme", "")),
+        }
+        
+        # Step 2: Check if repair is needed
+        if _needs_repair(aspects):
+            try:
+                repair_prompt = REPAIR_PROMPT.format(
+                    story=story,
+                    bad_json=json.dumps(
+                        {"coa": aspects["coa"], "outcomes": aspects["outcomes"], "theme": aspects["theme"]},
+                        ensure_ascii=False,
+                    ),
+                )
+                raw_repair = call_ollama(host, model, V3_SYS + "\n\n" + repair_prompt, 350, True, 0.0)
+                repaired = parse_json(raw_repair)
+                aspects["coa"] = postprocess_coa(repaired.get("coa", aspects["coa"]))
+                aspects["outcomes"] = postprocess_outcomes(repaired.get("outcomes", aspects["outcomes"]))
+                aspects["theme"] = postprocess_theme(repaired.get("theme", aspects["theme"]))
+            except Exception as e:
+                st.warning(f"Repair failed: {e}")
+        
+        # Step 3: Validate
+        for asp in ASPECT_KEYS:
+            _validate_aspect(asp, aspects[asp], story)
+        
+        return aspects
 
     EXTRACTORS = {"v1": extract_v1, "v2": extract_v2, "v3": extract_v3}
 
     def ollama_connected(host):
         try:
             req = urllib.request.Request(f"{host}/api/tags", method="GET")
-            with urllib.request.urlopen(req, timeout=1): return True
-        except: return False
+            with urllib.request.urlopen(req, timeout=1):
+                return True
+        except:
+            return False
 
     def get_executor():
         if "executor_live" not in st.session_state:
@@ -2404,9 +2743,11 @@ elif page == "Live Aspect Extraction":
 
     def update_job():
         job = st.session_state.get("live_job")
-        if not job: return False
+        if not job:
+            return False
         future = job["future"]
-        if not future.done(): return True
+        if not future.done():
+            return True
         try:
             result = future.result()
             st.session_state["live_error"] = None
@@ -2417,12 +2758,12 @@ elif page == "Live Aspect Extraction":
         return False
 
     # Init state
-    for k, v in [("live_result",None),("live_error",None),("live_job",None),("live_story",""),("live_mode","V1 - Verbose Prose")]:
+    for k, v in [("live_result", None), ("live_error", None), ("live_job", None), ("live_story", ""), ("live_mode", "V1 - Verbose Prose")]:
         st.session_state.setdefault(k, v)
 
     update_job()
 
-    # ── Page ──
+    # ── Page UI ──
     st.markdown("<div class='thesis-eyebrow'>Chapter 3 · Section 3.4 · RQ6</div>", unsafe_allow_html=True)
     st.markdown("## Live Aspect Extraction")
     st.markdown("Extract **course of action**, **outcomes**, and **abstract theme** from any story summary using a local LLM. Demonstrates the three extraction strategies developed in the thesis (§3.4.1).")
@@ -2449,8 +2790,13 @@ elif page == "Live Aspect Extraction":
                 st.session_state["live_result"] = None
                 st.session_state["live_error"] = None
 
-            story = st.text_area("Input story", key="live_story", height=280, label_visibility="collapsed",
-                                  placeholder="Paste a story summary, chapter outline, or synopsis here…")
+            story = st.text_area(
+                "Input story",
+                key="live_story",
+                height=280,
+                label_visibility="collapsed",
+                placeholder="Paste a story summary, chapter outline, or synopsis here…"
+            )
             st.caption(f"{len(story)} characters")
 
     with cfg_col:
@@ -2459,7 +2805,7 @@ elif page == "Live Aspect Extraction":
             mode = st.radio("Extraction version", list(MODE_MAP.keys()), key="live_mode")
             st.markdown(f"<div class='card card-accent-gold' style='font-size:0.83rem; margin-top:0;'>{MODE_DESC[mode]}</div>", unsafe_allow_html=True)
             requested = None
-            if st.button("Extract narrative aspects", type="primary", use_container_width=True,
+            if st.button("Extract narrative aspects", type="primary", width='stretch',
                          disabled=job_running() or not story.strip()):
                 requested = MODE_MAP[mode]
             st.markdown("---")
@@ -2484,14 +2830,14 @@ elif page == "Live Aspect Extraction":
 
     was = job_running()
     still = update_job()
-    if was and not still: 
+    if was and not still:
         st.rerun()
 
     with st.container(border=True):
         st.markdown("#### Extraction output")
         if still:
             job = st.session_state["live_job"]
-            elapsed = int(time.time()-job["started_at"])
+            elapsed = int(time.time() - job["started_at"])
             st.info(f"Extracting with {job['version'].upper()}… {elapsed}s elapsed. Running Llama 3.1 8B locally.")
             time.sleep(0.8)
             st.rerun()
@@ -2511,8 +2857,12 @@ elif page == "Live Aspect Extraction":
             with r3:
                 st.markdown("<span class='pill pill-thm'>Abstract Theme</span>", unsafe_allow_html=True)
                 st.markdown(f"<div class='card card-accent-thm'>{aspects.get('theme','-')}</div>", unsafe_allow_html=True)
-            st.download_button("Export JSON", data=json.dumps(result, indent=2, ensure_ascii=False),
-                               file_name=f"aspects_{result['version']}.json", mime="application/json")
+            st.download_button(
+                "Export JSON",
+                data=json.dumps(result, indent=2, ensure_ascii=False),
+                file_name=f"aspects_{result['version']}.json",
+                mime="application/json"
+            )
             with st.expander("Raw JSON"):
                 st.json(result)
         elif not still and not st.session_state.get("live_error"):
