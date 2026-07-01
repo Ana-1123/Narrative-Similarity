@@ -1544,8 +1544,7 @@ elif page == "Translation Explorer":
         Across the full 11,775-entry cache, the length-ratio (target words ÷ source words) ranges from
         {length_ratio.get('min', 0):.3f} to {length_ratio.get('max', 0):.3f}, with a median of
         {length_ratio.get('median', 0):.3f} — translations are slightly more compact than their English
-        source on average, consistent with Romanian's tendency toward shorter renderings of the same content.
-        The {flagged_count} flagged cases ({flagged_rate:.2f}%) sit well outside this typical range.
+        source on average.
         </div>""", unsafe_allow_html=True)
 
         if not full_trans_cache:
@@ -1823,8 +1822,6 @@ elif page == "Prediction Explorer":
 
         if not all_rows:
             st.stop()
-
-        st.markdown("---")
 
         # Plot on the left
         with left_col:
